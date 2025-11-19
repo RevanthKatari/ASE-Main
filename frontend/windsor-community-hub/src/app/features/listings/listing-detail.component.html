@@ -1,0 +1,156 @@
+<div class="detail-container">
+  <div *ngIf="isLoading()" class="loading-state">
+    <div class="spinner"></div>
+    <p>Loading listing details...</p>
+  </div>
+
+  <div *ngIf="!isLoading() && errorMessage()" class="error-state">
+    <h2>⚠️ {{ errorMessage() }}</h2>
+    <button class="btn-back" (click)="goBack()">← Back to Listings</button>
+  </div>
+
+  <div *ngIf="!isLoading() && listing() as listing">
+    <!-- Back Button -->
+    <button class="btn-back-floating" (click)="goBack()">← Back</button>
+
+    <div class="detail-content">
+      <!-- Photo Gallery -->
+      <section class="photo-gallery">
+      <div *ngIf="listing.photos && listing.photos.length > 0" class="carousel">
+        <div class="carousel-main">
+          <img [src]="listing.photos[currentPhotoIndex()]" [alt]="listing.title" class="main-photo" />
+
+          <!-- Navigation Arrows -->
+          <button
+            *ngIf="listing.photos.length > 1"
+            class="carousel-btn carousel-prev"
+            (click)="previousPhoto()"
+          >
+            ❮
+          </button>
+          <button
+            *ngIf="listing.photos.length > 1"
+            class="carousel-btn carousel-next"
+            (click)="nextPhoto()"
+          >
+            ❯
+          </button>
+
+          <!-- Photo Counter -->
+          <div *ngIf="listing.photos.length > 1" class="photo-counter">
+            {{ currentPhotoIndex() + 1 }} / {{ listing.photos.length }}
+          </div>
+        </div>
+
+        <!-- Thumbnail Strip -->
+        <div *ngIf="listing.photos.length > 1" class="carousel-thumbnails">
+          <button
+            *ngFor="let photo of listing.photos; let i = index"
+            class="thumbnail"
+            [class.active]="i === currentPhotoIndex()"
+            (click)="goToPhoto(i)"
+          >
+            <img [src]="photo" [alt]="'Photo ' + (i + 1)" />
+          </button>
+        </div>
+      </div>
+
+      <div *ngIf="!listing.photos || listing.photos.length === 0" class="no-photos">
+        <span class="no-photos-icon">📷</span>
+        <p>No photos available</p>
+      </div>
+    </section>
+
+    <!-- Listing Details -->
+    <section class="details-section">
+      <div class="details-header">
+        <div>
+          <h1>{{ listing.title }}</h1>
+          <p class="location">📍 {{ listing.location }}</p>
+        </div>
+        <div class="price-badge">
+          <span class="price-amount">${{ listing.price | number: '1.0-0' }}</span>
+          <span class="price-period">/month</span>
+        </div>
+      </div>
+
+      <!-- Verification Badge -->
+      <div class="verification-status">
+        <span *ngIf="listing.verified" class="badge verified">✅ Verified Listing</span>
+        <span *ngIf="!listing.verified" class="badge unverified">⏳ Pending Verification</span>
+        
+        <!-- Verify Button for Helpers -->
+        <button
+          *ngIf="!listing.verified && (currentUser$ | async)?.role !== 'student'"
+          class="btn-verify-inline"
+          (click)="verifyListing()"
+        >
+          Verify This Listing
+        </button>
+      </div>
+
+      <!-- Description -->
+      <div class="details-card">
+        <h2>📝 Description</h2>
+        <p class="description">{{ listing.description }}</p>
+      </div>
+
+      <!-- Contact Information -->
+      <div class="details-card contact-card">
+        <h2>✉️ Contact Information</h2>
+        <p class="contact-info">{{ listing.contact }}</p>
+        <a [href]="'mailto:' + listing.contact" class="btn-contact"> Send Email </a>
+      </div>
+
+      <!-- Posted By -->
+      <div class="details-card owner-card">
+        <h2>👤 Posted By</h2>
+        <div class="owner-info">
+          <div class="owner-avatar">{{ listing.owner.full_name.charAt(0).toUpperCase() }}</div>
+          <div class="owner-details">
+            <p class="owner-name">{{ listing.owner.full_name }}</p>
+            <p class="owner-role">{{ listing.owner.role }}</p>
+            <p class="post-date">Posted on {{ listing.created_at | date: 'fullDate' }}</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Quick Info Grid -->
+      <div class="quick-info-grid">
+        <div class="quick-info-card">
+          <span class="info-icon">💰</span>
+          <div>
+            <p class="info-label">Monthly Rent</p>
+            <p class="info-value">${{ listing.price | number: '1.0-0' }}</p>
+          </div>
+        </div>
+
+        <div class="quick-info-card">
+          <span class="info-icon">📍</span>
+          <div>
+            <p class="info-label">Location</p>
+            <p class="info-value">{{ listing.location }}</p>
+          </div>
+        </div>
+
+        <div class="quick-info-card">
+          <span class="info-icon">📅</span>
+          <div>
+            <p class="info-label">Posted</p>
+            <p class="info-value">{{ listing.created_at | date: 'mediumDate' }}</p>
+          </div>
+        </div>
+
+        <div class="quick-info-card">
+          <span class="info-icon">✅</span>
+          <div>
+            <p class="info-label">Status</p>
+            <p class="info-value">{{ listing.verified ? 'Verified' : 'Pending' }}</p>
+          </div>
+        </div>
+      </div>
+    </section>
+    </div>
+  </div>
+</div>
+

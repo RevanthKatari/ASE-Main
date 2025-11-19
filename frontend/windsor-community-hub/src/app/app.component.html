@@ -1,0 +1,55 @@
+<div class="app-shell">
+  <header class="top-nav">
+    <a routerLink="/listings" class="brand">
+      <span class="brand-icon">🏠</span>
+      {{ title }}
+    </a>
+
+    <nav class="links">
+      <a routerLink="/listings" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: true }">
+        <span class="nav-icon">🏠</span> Housing
+      </a>
+      <a routerLink="/events" routerLinkActive="active">
+        <span class="nav-icon">📅</span> Events
+      </a>
+      <a
+        *ngIf="(currentUser$ | async)?.role !== 'student'"
+        routerLink="/moderation"
+        routerLinkActive="active"
+      >
+        <span class="nav-icon">🛡️</span> Moderation
+      </a>
+    </nav>
+
+    <div class="auth-area">
+      <ng-container *ngIf="currentUser$ | async as user; else guestLinks">
+        <div class="user-info">
+          <span class="user-avatar">{{ user.full_name.charAt(0).toUpperCase() }}</span>
+          <div class="user-details">
+            <span class="user-name">{{ user.full_name }}</span>
+            <span class="user-role">{{ user.role }}</span>
+          </div>
+        </div>
+        <button type="button" (click)="logout()" class="btn-signout">Sign out</button>
+      </ng-container>
+      <ng-template #guestLinks>
+        <a routerLink="/login" routerLinkActive="active" class="btn-signin"> 🔐 Sign in </a>
+      </ng-template>
+    </div>
+  </header>
+
+  <main class="content">
+    <router-outlet />
+  </main>
+
+  <footer class="footer">
+    <p>
+      <strong>Windsor Community Hub</strong> · Evidence-driven platform connecting newcomers with trusted
+      resources
+    </p>
+    <p class="footer-credits">Built for COMP-8117 with care 💙</p>
+  </footer>
+
+  <!-- Floating Chatbot -->
+  <app-chatbot></app-chatbot>
+</div>

@@ -1,0 +1,71 @@
+<div class="auth-container">
+  <section class="auth-card">
+    <div class="auth-header">
+      <h1>{{ heading() }}</h1>
+      <p class="subtitle">
+        {{
+          mode() === 'login'
+            ? 'Welcome back! Access your dashboard to manage listings and events.'
+            : 'Join our community to share verified housing and stay connected.'
+        }}
+      </p>
+    </div>
+
+    <div class="alert alert-error" *ngIf="errorMessage() as error">⚠️ {{ error }}</div>
+
+    <form [formGroup]="form" (ngSubmit)="submit()" class="auth-form">
+      <label *ngIf="mode() === 'register'" class="form-field">
+        <span class="field-label">👤 Full Name</span>
+        <input type="text" placeholder="Enter your full name" formControlName="full_name" class="form-input" />
+        <small
+          class="field-error"
+          *ngIf="form.controls.full_name.invalid && form.controls.full_name.touched"
+        >
+          A full name is required to register.
+        </small>
+      </label>
+
+      <label class="form-field">
+        <span class="field-label">✉️ Email</span>
+        <input
+          type="email"
+          placeholder="your.email@example.com"
+          formControlName="email"
+          autocomplete="email"
+          class="form-input"
+        />
+        <small class="field-error" *ngIf="form.controls.email.invalid && form.controls.email.touched">
+          Enter a valid email address.
+        </small>
+      </label>
+
+      <label class="form-field">
+        <span class="field-label">🔒 Password</span>
+        <input
+          type="password"
+          placeholder="Enter your password"
+          formControlName="password"
+          autocomplete="current-password"
+          class="form-input"
+        />
+        <small class="field-error" *ngIf="form.controls.password.invalid && form.controls.password.touched">
+          Password must be at least 6 characters.
+        </small>
+      </label>
+
+      <button type="submit" class="btn-submit" [disabled]="isSubmitting() || form.invalid">
+        <span *ngIf="!isSubmitting()">{{ submitLabel() }}</span>
+        <span *ngIf="isSubmitting()">⏳ Processing...</span>
+      </button>
+    </form>
+
+    <div class="auth-switch">
+      <p>
+        {{ mode() === 'login' ? "Don't have an account?" : 'Already have an account?' }}
+        <button type="button" class="btn-switch" (click)="toggleMode()" [disabled]="isSubmitting()">
+          {{ mode() === 'login' ? 'Create Account' : 'Sign In' }}
+        </button>
+      </p>
+    </div>
+  </section>
+</div>

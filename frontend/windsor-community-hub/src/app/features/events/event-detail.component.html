@@ -1,0 +1,137 @@
+<div class="detail-container">
+  <div *ngIf="isLoading()" class="loading-state">
+    <div class="spinner"></div>
+    <p>Loading event details...</p>
+  </div>
+
+  <div *ngIf="!isLoading() && errorMessage()" class="error-state">
+    <h2>⚠️ {{ errorMessage() }}</h2>
+    <button class="btn-back" (click)="goBack()">← Back to Events</button>
+  </div>
+
+  <div *ngIf="!isLoading() && event() as event" class="detail-content">
+    <!-- Back Button -->
+    <button class="btn-back-floating" (click)="goBack()">← Back to Events</button>
+
+    <!-- Event Header -->
+    <section class="event-header">
+      <div class="event-icon-large">📅</div>
+      <div class="header-content">
+        <span class="event-status" [class]="getEventStatus(event)">
+          {{ getEventStatusLabel(event) }}
+        </span>
+        <h1>{{ event.title }}</h1>
+        <p class="event-location">📍 {{ event.location }}</p>
+      </div>
+    </section>
+
+    <!-- Embedded Event (Luma) -->
+    <section *ngIf="event.iframe_url && safeIframeUrl()" class="iframe-container">
+      <iframe
+        [src]="safeIframeUrl()"
+        width="100%"
+        height="600"
+        frameborder="0"
+        class="event-iframe"
+        allow="fullscreen; payment"
+        aria-hidden="false"
+        tabindex="0"
+      ></iframe>
+    </section>
+
+    <!-- Date & Time Card -->
+    <section class="details-card datetime-card">
+      <h2>🕒 Date & Time</h2>
+      <div class="datetime-info">
+        <div class="datetime-item">
+          <span class="datetime-icon">📅</span>
+          <div>
+            <p class="datetime-label">Date</p>
+            <p class="datetime-value">{{ event.start_time | date: 'fullDate' }}</p>
+          </div>
+        </div>
+        <div class="datetime-item">
+          <span class="datetime-icon">🕐</span>
+          <div>
+            <p class="datetime-label">Time</p>
+            <p class="datetime-value">{{ event.start_time | date: 'shortTime' }}</p>
+          </div>
+        </div>
+        <div class="datetime-item">
+          <span class="datetime-icon">📍</span>
+          <div>
+            <p class="datetime-label">Venue</p>
+            <p class="datetime-value">{{ event.location }}</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Description Card -->
+    <section class="details-card">
+      <h2>📝 About This Event</h2>
+      <p class="description">{{ event.description }}</p>
+    </section>
+
+    <!-- Host Information -->
+    <section class="details-card host-card">
+      <h2>👤 Hosted By</h2>
+      <div class="host-info">
+        <div class="host-avatar">{{ event.creator.full_name.charAt(0).toUpperCase() }}</div>
+        <div class="host-details">
+          <p class="host-name">{{ event.creator.full_name }}</p>
+          <p class="host-role">{{ event.creator.role }}</p>
+          <p class="host-email">✉️ {{ event.creator.email }}</p>
+        </div>
+      </div>
+      <a [href]="'mailto:' + event.creator.email" class="btn-contact"> Contact Host </a>
+    </section>
+
+    <!-- Quick Info -->
+    <section class="quick-info">
+      <div class="info-item">
+        <span class="info-icon">📅</span>
+        <div>
+          <p class="info-label">Event Date</p>
+          <p class="info-value">{{ event.start_time | date: 'mediumDate' }}</p>
+        </div>
+      </div>
+
+      <div class="info-item">
+        <span class="info-icon">📍</span>
+        <div>
+          <p class="info-label">Location</p>
+          <p class="info-value">{{ event.location }}</p>
+        </div>
+      </div>
+
+      <div class="info-item">
+        <span class="info-icon">👤</span>
+        <div>
+          <p class="info-label">Organizer</p>
+          <p class="info-value">{{ event.creator.full_name }}</p>
+        </div>
+      </div>
+
+      <div class="info-item">
+        <span class="info-icon">📋</span>
+        <div>
+          <p class="info-label">Posted</p>
+          <p class="info-value">{{ event.created_at | date: 'mediumDate' }}</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- Call to Action -->
+    <section class="cta-section" *ngIf="getEventStatus(event) !== 'past'">
+      <div class="cta-content">
+        <h2>🎉 Interested in Attending?</h2>
+        <p>Reach out to the host for more details or to confirm your attendance.</p>
+        <a [href]="'mailto:' + event.creator.email + '?subject=Interest in ' + event.title" class="btn-cta">
+          Express Interest
+        </a>
+      </div>
+    </section>
+  </div>
+</div>
+
