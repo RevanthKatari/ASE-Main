@@ -11,11 +11,11 @@
       </p>
     </div>
 
-    <div class="alert alert-error" *ngIf="errorMessage() as error">⚠️ {{ error }}</div>
+    <div class="alert alert-error" *ngIf="errorMessage() as error">{{ error }}</div>
 
     <form [formGroup]="form" (ngSubmit)="submit()" class="auth-form">
       <label *ngIf="mode() === 'register'" class="form-field">
-        <span class="field-label">👤 Full Name</span>
+        <span class="field-label">Full Name</span>
         <input type="text" placeholder="Enter your full name" formControlName="full_name" class="form-input" />
         <small
           class="field-error"
@@ -26,7 +26,7 @@
       </label>
 
       <label class="form-field">
-        <span class="field-label">✉️ Email</span>
+        <span class="field-label">Email</span>
         <input
           type="email"
           placeholder="your.email@example.com"
@@ -40,7 +40,7 @@
       </label>
 
       <label class="form-field">
-        <span class="field-label">🔒 Password</span>
+        <span class="field-label">Password</span>
         <input
           type="password"
           placeholder="Enter your password"
@@ -55,7 +55,7 @@
 
       <button type="submit" class="btn-submit" [disabled]="isSubmitting() || form.invalid">
         <span *ngIf="!isSubmitting()">{{ submitLabel() }}</span>
-        <span *ngIf="isSubmitting()">⏳ Processing...</span>
+        <span *ngIf="isSubmitting()">Processing...</span>
       </button>
     </form>
 

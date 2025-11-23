@@ -92,6 +92,33 @@ def verify_listing(listing_id):
     return jsonify(listing_schema.dump(listing)), HTTPStatus.OK
 
 
+@listings_bp.delete("/<int:listing_id>")
+def delete_listing(listing_id):
+    """Delete a listing. Only the owner or a helper can delete."""
+    payload = request.get_json() or {}
+    user_id = payload.get("user_id")
+    
+    if not user_id:
+        return jsonify({"error": "user_id is required"}), HTTPStatus.BAD_REQUEST
+    
+    user = db.session.get(User, user_id)
+    if not user:
+        return jsonify({"error": "User not found"}), HTTPStatus.NOT_FOUND
+    
+    listing = db.session.get(Listing, listing_id)
+    if not listing:
+        return jsonify({"error": "Listing not found"}), HTTPStatus.NOT_FOUND
+    
+    # Authorization: owner can delete their own listing, helpers can delete any listing
+    if listing.owner_id != user_id and user.role == "student":
+        return jsonify({"error": "You can only delete your own listings"}), HTTPStatus.FORBIDDEN
+    
+    db.session.delete(listing)
+    db.session.commit()
+    
+    return jsonify({"message": "Listing deleted successfully"}), HTTPStatus.OK
+
+
 @listings_bp.post("/upload-photo")
 def upload_photo():
     """Handle photo uploads and return the URL"""

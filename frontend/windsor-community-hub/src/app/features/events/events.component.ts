@@ -96,5 +96,47 @@ export class EventsComponent implements OnInit {
         },
       });
   }
+
+  canDeleteEvent(event: CommunityEvent, currentUser: any): boolean {
+    if (!currentUser) return false;
+    // Creator can delete their own event, helpers can delete any event
+    return event.creator.id === currentUser.id || currentUser.role !== 'student';
+  }
+
+  deleteEvent(event: CommunityEvent, clickEvent: Event): void {
+    clickEvent.stopPropagation(); // Prevent navigation to detail page
+    
+    const currentUser = this.authService.currentUser;
+    if (!currentUser) {
+      this.errorMessage.set('Please sign in to delete events.');
+      return;
+    }
+
+    if (!this.canDeleteEvent(event, currentUser)) {
+      this.errorMessage.set('You can only delete your own events.');
+      return;
+    }
+
+    if (!confirm(`Are you sure you want to delete "${event.title}"? This action cannot be undone.`)) {
+      return;
+    }
+
+    this.isSubmitting.set(true);
+    this.errorMessage.set(null);
+
+    this.eventService
+      .deleteEvent(event.id, currentUser.id)
+      .pipe(finalize(() => this.isSubmitting.set(false)))
+      .subscribe({
+        next: () => {
+          this.events.update((items) => items.filter((item) => item.id !== event.id));
+          this.feedbackMessage.set('Event deleted successfully.');
+          setTimeout(() => this.feedbackMessage.set(null), 3000);
+        },
+        error: (error) => {
+          this.errorMessage.set(error?.error?.error ?? 'Unable to delete event.');
+        },
+      });
+  }
 }
 

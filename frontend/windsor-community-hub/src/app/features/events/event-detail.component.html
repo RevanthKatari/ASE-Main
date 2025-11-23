@@ -5,7 +5,7 @@
   </div>
 
   <div *ngIf="!isLoading() && errorMessage()" class="error-state">
-    <h2>⚠️ {{ errorMessage() }}</h2>
+    <h2>{{ errorMessage() }}</h2>
     <button class="btn-back" (click)="goBack()">← Back to Events</button>
   </div>
 
@@ -17,9 +17,20 @@
     <section class="event-header">
       <div class="event-icon-large">📅</div>
       <div class="header-content">
-        <span class="event-status" [class]="getEventStatus(event)">
-          {{ getEventStatusLabel(event) }}
-        </span>
+        <div class="header-top">
+          <span class="event-status" [class]="getEventStatus(event)">
+            {{ getEventStatusLabel(event) }}
+          </span>
+          <button
+            *ngIf="(currentUser$ | async) && canDeleteEvent(event, currentUser$ | async)"
+            class="btn-delete-header"
+            (click)="deleteEvent()"
+            [disabled]="isLoading()"
+            title="Delete event"
+          >
+            Delete
+          </button>
+        </div>
         <h1>{{ event.title }}</h1>
         <p class="event-location">📍 {{ event.location }}</p>
       </div>
@@ -41,7 +52,7 @@
 
     <!-- Date & Time Card -->
     <section class="details-card datetime-card">
-      <h2>🕒 Date & Time</h2>
+      <h2>Date & Time</h2>
       <div class="datetime-info">
         <div class="datetime-item">
           <span class="datetime-icon">📅</span>
@@ -69,22 +80,22 @@
 
     <!-- Description Card -->
     <section class="details-card">
-      <h2>📝 About This Event</h2>
+      <h2>About This Event</h2>
       <p class="description">{{ event.description }}</p>
     </section>
 
     <!-- Host Information -->
     <section class="details-card host-card">
-      <h2>👤 Hosted By</h2>
+      <h2>Hosted By</h2>
       <div class="host-info">
         <div class="host-avatar">{{ event.creator.full_name.charAt(0).toUpperCase() }}</div>
         <div class="host-details">
           <p class="host-name">{{ event.creator.full_name }}</p>
           <p class="host-role">{{ event.creator.role }}</p>
-          <p class="host-email">✉️ {{ event.creator.email }}</p>
+          <p class="host-email">{{ event.creator.email }}</p>
         </div>
       </div>
-      <a [href]="'mailto:' + event.creator.email" class="btn-contact"> Contact Host </a>
+      <a [href]="'mailto:' + event.creator.email" class="btn-contact">Contact Host</a>
     </section>
 
     <!-- Quick Info -->
@@ -125,7 +136,7 @@
     <!-- Call to Action -->
     <section class="cta-section" *ngIf="getEventStatus(event) !== 'past'">
       <div class="cta-content">
-        <h2>🎉 Interested in Attending?</h2>
+        <h2>Interested in Attending?</h2>
         <p>Reach out to the host for more details or to confirm your attendance.</p>
         <a [href]="'mailto:' + event.creator.email + '?subject=Interest in ' + event.title" class="btn-cta">
           Express Interest

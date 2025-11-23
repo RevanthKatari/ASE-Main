@@ -29,5 +29,11 @@ export class EventService {
   createEvent(payload: CreateEventPayload): Observable<CommunityEvent> {
     return this.http.post<CommunityEvent>(`${this.baseUrl}/`, payload);
   }
+
+  deleteEvent(eventId: number, userId: number): Observable<{ message: string }> {
+    return this.http.request<{ message: string }>('DELETE', `${this.baseUrl}/${eventId}`, {
+      body: { user_id: userId },
+    });
+  }
 }
 

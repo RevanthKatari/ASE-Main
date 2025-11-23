@@ -7,17 +7,17 @@
 
     <nav class="links">
       <a routerLink="/listings" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: true }">
-        <span class="nav-icon">🏠</span> Housing
+        Housing
       </a>
       <a routerLink="/events" routerLinkActive="active">
-        <span class="nav-icon">📅</span> Events
+        Events
       </a>
       <a
         *ngIf="(currentUser$ | async)?.role !== 'student'"
         routerLink="/moderation"
         routerLinkActive="active"
       >
-        <span class="nav-icon">🛡️</span> Moderation
+        Moderation
       </a>
     </nav>
 
@@ -30,10 +30,10 @@
             <span class="user-role">{{ user.role }}</span>
           </div>
         </div>
-        <button type="button" (click)="logout()" class="btn-signout">Sign out</button>
+        <button type="button" (click)="logout()" class="btn-signout">Sign Out</button>
       </ng-container>
       <ng-template #guestLinks>
-        <a routerLink="/login" routerLinkActive="active" class="btn-signin"> 🔐 Sign in </a>
+        <a routerLink="/login" routerLinkActive="active" class="btn-signin">Sign In</a>
       </ng-template>
     </div>
   </header>
@@ -43,13 +43,5 @@
   </main>
 
   <footer class="footer">
-    <p>
-      <strong>Windsor Community Hub</strong> · Evidence-driven platform connecting newcomers with trusted
-      resources
-    </p>
-    <p class="footer-credits">Built for COMP-8117 with care 💙</p>
   </footer>
-
-  <!-- Floating Chatbot -->
-  <app-chatbot></app-chatbot>
 </div>

@@ -43,5 +43,11 @@ export class ListingService {
       helper_id: helperId,
     });
   }
+
+  deleteListing(listingId: number, userId: number): Observable<{ message: string }> {
+    return this.http.request<{ message: string }>('DELETE', `${this.baseUrl}/${listingId}`, {
+      body: { user_id: userId },
+    });
+  }
 }
 

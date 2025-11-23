@@ -1,37 +1,37 @@
 <div class="moderation-container">
   <header class="page-header">
     <div>
-      <h1>🛡️ Listing Moderation</h1>
+      <h1>Listing Moderation</h1>
       <p>Review and verify housing listings to help keep the community safe.</p>
     </div>
     <button type="button" class="btn-refresh" (click)="loadListings()" [disabled]="isLoading()">
-      🔄 Refresh
+      Refresh
     </button>
   </header>
 
   <div class="alert alert-error" *ngIf="errorMessage() as error">
-    ⚠️ {{ error }}
+    {{ error }}
   </div>
 
   <div class="alert alert-success" *ngIf="successMessage() as message">
-    ✅ {{ message }}
+    {{ message }}
   </div>
 
   <div *ngIf="currentUser$ | async as currentUser; else signInPrompt">
     <div *ngIf="currentUser.role === 'student'" class="alert alert-warning">
-      ⚠️ You need helper privileges to moderate listings.
+      You need helper privileges to moderate listings.
     </div>
 
     <div *ngIf="currentUser.role !== 'student'">
       <!-- Unverified Listings Section -->
       <section class="listings-section">
         <h2 class="section-title">
-          ⏳ Pending Verification
+          Pending Verification
           <span class="count-badge">{{ unverifiedListings.length }}</span>
         </h2>
 
         <div *ngIf="unverifiedListings.length === 0" class="empty-state">
-          <p>🎉 All listings are verified! Great job!</p>
+          <p>All listings are verified! Great job!</p>
         </div>
 
         <div class="listings-grid">
@@ -49,16 +49,16 @@
                 <span class="price">${{ listing.price | number: '1.0-0' }}/mo</span>
               </div>
 
-              <p class="location">📍 {{ listing.location }}</p>
+              <p class="location">{{ listing.location }}</p>
               <p class="description">{{ listing.description }}</p>
 
               <div class="listing-meta">
-                <span class="owner">👤 {{ listing.owner.full_name }}</span>
-                <span class="date">🕒 {{ listing.created_at | date: 'short' }}</span>
+                <span class="owner">{{ listing.owner.full_name }}</span>
+                <span class="date">{{ listing.created_at | date: 'short' }}</span>
               </div>
 
               <div class="contact">
-                ✉️ Contact: <a [href]="'mailto:' + listing.contact">{{ listing.contact }}</a>
+                Contact: <a [href]="'mailto:' + listing.contact">{{ listing.contact }}</a>
               </div>
 
               <button
@@ -67,7 +67,7 @@
                 (click)="verifyListing(listing)"
                 [disabled]="isLoading()"
               >
-                ✅ Verify Listing
+                Verify Listing
               </button>
             </div>
           </article>
@@ -77,7 +77,7 @@
       <!-- Verified Listings Section -->
       <section class="listings-section">
         <h2 class="section-title">
-          ✅ Verified Listings
+          Verified Listings
           <span class="count-badge verified">{{ verifiedListings.length }}</span>
         </h2>
 
@@ -96,14 +96,14 @@
                 <span class="price">${{ listing.price | number: '1.0-0' }}/mo</span>
               </div>
 
-              <span class="verified-badge">✅ Verified</span>
+              <span class="verified-badge">Verified</span>
 
-              <p class="location">📍 {{ listing.location }}</p>
+              <p class="location">{{ listing.location }}</p>
               <p class="description">{{ listing.description }}</p>
 
               <div class="listing-meta">
-                <span class="owner">👤 {{ listing.owner.full_name }}</span>
-                <span class="date">🕒 {{ listing.created_at | date: 'short' }}</span>
+                <span class="owner">{{ listing.owner.full_name }}</span>
+                <span class="date">{{ listing.created_at | date: 'short' }}</span>
               </div>
             </div>
           </article>
@@ -114,7 +114,7 @@
 
   <ng-template #signInPrompt>
     <div class="sign-in-prompt">
-      <p>🔐 Please sign in with a helper account to access moderation tools.</p>
+      <p>Please sign in with a helper account to access moderation tools.</p>
     </div>
   </ng-template>
 </div>

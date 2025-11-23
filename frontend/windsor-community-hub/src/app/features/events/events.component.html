@@ -1,21 +1,21 @@
 <div class="events-container">
   <header class="page-header">
     <div>
-      <h1>📅 Community Events</h1>
+      <h1>Community Events</h1>
       <p>Connect with newcomers and locals through meetups, workshops, and celebrations.</p>
     </div>
     <button type="button" class="btn-refresh" (click)="loadEvents()" [disabled]="isLoading()">
-      🔄 Refresh
+      Refresh
     </button>
   </header>
 
-  <div class="alert alert-error" *ngIf="errorMessage() as error">⚠️ {{ error }}</div>
+  <div class="alert alert-error" *ngIf="errorMessage() as error">{{ error }}</div>
 
-  <div class="alert alert-success" *ngIf="feedbackMessage() as message">✅ {{ message }}</div>
+  <div class="alert alert-success" *ngIf="feedbackMessage() as message">{{ message }}</div>
 
   <!-- Create Event Form -->
   <section class="create-section" *ngIf="currentUser$ | async as currentUser; else signInPrompt">
-    <h2>🎉 Host an Event</h2>
+    <h2>Host an Event</h2>
     <form [formGroup]="form" (ngSubmit)="submit()" class="modern-form">
       <div class="form-grid">
         <label class="form-label">
@@ -68,8 +68,8 @@
       </label>
 
       <button type="submit" class="btn-submit" [disabled]="isSubmitting() || form.invalid">
-        <span *ngIf="!isSubmitting()">🚀 Publish Event</span>
-        <span *ngIf="isSubmitting()">⏳ Publishing...</span>
+        <span *ngIf="!isSubmitting()">Publish Event</span>
+        <span *ngIf="isSubmitting()">Publishing...</span>
       </button>
 
       <small class="form-help">
@@ -81,7 +81,7 @@
 
   <ng-template #signInPrompt>
     <div class="sign-in-prompt">
-      <p>🔐 Please sign in to create and share community events.</p>
+      <p>Please sign in to create and share community events.</p>
     </div>
   </ng-template>
 
@@ -101,23 +101,35 @@
 
         <div class="event-details">
           <p class="event-datetime">
-            🗓️ {{ event.start_time | date: 'fullDate' }}<br />
-            🕒 {{ event.start_time | date: 'shortTime' }}
+            {{ event.start_time | date: 'fullDate' }}<br />
+            {{ event.start_time | date: 'shortTime' }}
           </p>
-          <p class="event-location">📍 {{ event.location }}</p>
+          <p class="event-location">{{ event.location }}</p>
         </div>
 
         <p class="event-description">{{ event.description }}</p>
 
         <div class="event-footer">
-          <span class="event-creator">👤 {{ event.creator.full_name }}</span>
-          <span class="event-posted">Posted {{ event.created_at | date: 'mediumDate' }}</span>
+          <div class="event-meta">
+            <span class="event-creator">{{ event.creator.full_name }}</span>
+            <span class="event-posted">Posted {{ event.created_at | date: 'mediumDate' }}</span>
+          </div>
+          <button
+            *ngIf="(currentUser$ | async) && canDeleteEvent(event, currentUser$ | async)"
+            type="button"
+            class="btn-delete"
+            (click)="deleteEvent(event, $event)"
+            [disabled]="isSubmitting()"
+            title="Delete event"
+          >
+            Delete
+          </button>
         </div>
       </div>
     </article>
 
     <div *ngIf="events().length === 0" class="empty-state">
-      <p>📭 No upcoming events yet. Be the first to organize one!</p>
+      <p>No upcoming events yet. Be the first to organize one!</p>
     </div>
   </section>
 </div>

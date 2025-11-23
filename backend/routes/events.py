@@ -65,3 +65,29 @@ def create_event():
 
     return jsonify(event_schema.dump(event)), HTTPStatus.CREATED
 
+
+@events_bp.delete("/<int:event_id>")
+def delete_event(event_id):
+    """Delete an event. Only the creator or a helper can delete."""
+    payload = request.get_json() or {}
+    user_id = payload.get("user_id")
+    
+    if not user_id:
+        return jsonify({"error": "user_id is required"}), HTTPStatus.BAD_REQUEST
+    
+    user = db.session.get(User, user_id)
+    if not user:
+        return jsonify({"error": "User not found"}), HTTPStatus.NOT_FOUND
+    
+    event = db.session.get(Event, event_id)
+    if not event:
+        return jsonify({"error": "Event not found"}), HTTPStatus.NOT_FOUND
+    
+    # Authorization: creator can delete their own event, helpers can delete any event
+    if event.created_by_id != user_id and user.role == "student":
+        return jsonify({"error": "You can only delete your own events"}), HTTPStatus.FORBIDDEN
+    
+    db.session.delete(event)
+    db.session.commit()
+    
+    return jsonify({"message": "Event deleted successfully"}), HTTPStatus.OK

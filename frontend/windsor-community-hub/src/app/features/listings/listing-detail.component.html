@@ -5,7 +5,7 @@
   </div>
 
   <div *ngIf="!isLoading() && errorMessage()" class="error-state">
-    <h2>⚠️ {{ errorMessage() }}</h2>
+    <h2>{{ errorMessage() }}</h2>
     <button class="btn-back" (click)="goBack()">← Back to Listings</button>
   </div>
 
@@ -66,7 +66,7 @@
       <div class="details-header">
         <div>
           <h1>{{ listing.title }}</h1>
-          <p class="location">📍 {{ listing.location }}</p>
+          <p class="location">{{ listing.location }}</p>
         </div>
         <div class="price-badge">
           <span class="price-amount">${{ listing.price | number: '1.0-0' }}</span>
@@ -76,8 +76,8 @@
 
       <!-- Verification Badge -->
       <div class="verification-status">
-        <span *ngIf="listing.verified" class="badge verified">✅ Verified Listing</span>
-        <span *ngIf="!listing.verified" class="badge unverified">⏳ Pending Verification</span>
+        <span *ngIf="listing.verified" class="badge verified">Verified Listing</span>
+        <span *ngIf="!listing.verified" class="badge unverified">Pending Verification</span>
         
         <!-- Verify Button for Helpers -->
         <button
@@ -87,24 +87,34 @@
         >
           Verify This Listing
         </button>
+
+        <!-- Delete Button -->
+        <button
+          *ngIf="(currentUser$ | async) && canDeleteListing(listing, currentUser$ | async)"
+          class="btn-delete-inline"
+          (click)="deleteListing()"
+          [disabled]="isLoading()"
+        >
+          Delete Listing
+        </button>
       </div>
 
       <!-- Description -->
       <div class="details-card">
-        <h2>📝 Description</h2>
+        <h2>Description</h2>
         <p class="description">{{ listing.description }}</p>
       </div>
 
       <!-- Contact Information -->
       <div class="details-card contact-card">
-        <h2>✉️ Contact Information</h2>
+        <h2>Contact Information</h2>
         <p class="contact-info">{{ listing.contact }}</p>
-        <a [href]="'mailto:' + listing.contact" class="btn-contact"> Send Email </a>
+        <a [href]="'mailto:' + listing.contact" class="btn-contact">Send Email</a>
       </div>
 
       <!-- Posted By -->
       <div class="details-card owner-card">
-        <h2>👤 Posted By</h2>
+        <h2>Posted By</h2>
         <div class="owner-info">
           <div class="owner-avatar">{{ listing.owner.full_name.charAt(0).toUpperCase() }}</div>
           <div class="owner-details">

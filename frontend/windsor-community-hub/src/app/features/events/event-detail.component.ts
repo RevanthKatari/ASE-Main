@@ -2,6 +2,7 @@ import { AsyncPipe, DatePipe, NgFor, NgIf } from '@angular/common';
 import { Component, OnInit, inject, signal } from '@angular/core';
 import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
+import { finalize } from 'rxjs';
 
 import { AuthService } from '../../core/services/auth.service';
 import { EventService } from '../../core/services/event.service';
@@ -83,6 +84,46 @@ export class EventDetailComponent implements OnInit {
   getEventStatusLabel(event: CommunityEvent): string {
     const status = this.getEventStatus(event);
     return status === 'past' ? '✓ Past Event' : status === 'today' ? '🔥 Today!' : '📅 Upcoming';
+  }
+
+  canDeleteEvent(event: CommunityEvent, currentUser: any): boolean {
+    if (!currentUser) return false;
+    // Creator can delete their own event, helpers can delete any event
+    return event.creator.id === currentUser.id || currentUser.role !== 'student';
+  }
+
+  deleteEvent(): void {
+    const currentUser = this.authService.currentUser;
+    const event = this.event();
+
+    if (!currentUser || !event) {
+      this.errorMessage.set('Please sign in to delete events.');
+      return;
+    }
+
+    if (!this.canDeleteEvent(event, currentUser)) {
+      this.errorMessage.set('You can only delete your own events.');
+      return;
+    }
+
+    if (!confirm(`Are you sure you want to delete "${event.title}"? This action cannot be undone.`)) {
+      return;
+    }
+
+    this.isLoading.set(true);
+    this.errorMessage.set(null);
+
+    this.eventService
+      .deleteEvent(event.id, currentUser.id)
+      .pipe(finalize(() => this.isLoading.set(false)))
+      .subscribe({
+        next: () => {
+          this.router.navigate(['/events']);
+        },
+        error: (error) => {
+          this.errorMessage.set(error?.error?.error ?? 'Unable to delete event.');
+        },
+      });
   }
 }
 

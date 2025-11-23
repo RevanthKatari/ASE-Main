@@ -1,25 +1,25 @@
 <div class="listings-container">
   <header class="page-header">
     <div>
-      <h1>🏠 Housing Listings</h1>
+      <h1>Housing Listings</h1>
       <p>Find safe, verified accommodations shared by community members.</p>
     </div>
     <button type="button" class="btn-refresh" (click)="loadListings()" [disabled]="isLoading()">
-      🔄 Refresh
+      Refresh
     </button>
   </header>
 
   <div class="alert alert-error" *ngIf="errorMessage() as error">
-    ⚠️ {{ error }}
+    {{ error }}
   </div>
 
   <div class="alert alert-success" *ngIf="creationMessage() as message">
-    ✅ {{ message }}
+    {{ message }}
   </div>
 
   <!-- Create Listing Form -->
   <section class="create-section" *ngIf="currentUser$ | async as currentUser; else signInPrompt">
-    <h2>📝 Share a Housing Opportunity</h2>
+    <h2>Share a Housing Opportunity</h2>
     <form [formGroup]="form" (ngSubmit)="submit()" class="modern-form">
       <div class="form-grid">
         <label class="form-label">
@@ -94,8 +94,8 @@
               (click)="fileInput.click()"
               [disabled]="isUploadingPhoto()"
             >
-              <span *ngIf="!isUploadingPhoto()">📷 Add Photo</span>
-              <span *ngIf="isUploadingPhoto()">⏳ Uploading...</span>
+              <span *ngIf="!isUploadingPhoto()">Add Photo</span>
+              <span *ngIf="isUploadingPhoto()">Uploading...</span>
             </button>
           </div>
         </label>
@@ -112,8 +112,8 @@
       </div>
 
       <button type="submit" class="btn-submit" [disabled]="isSubmitting() || form.invalid">
-        <span *ngIf="!isSubmitting()">🚀 Publish Listing</span>
-        <span *ngIf="isSubmitting()">⏳ Publishing...</span>
+        <span *ngIf="!isSubmitting()">Publish Listing</span>
+        <span *ngIf="isSubmitting()">Publishing...</span>
       </button>
 
       <small class="form-help">
@@ -128,7 +128,7 @@
 
   <ng-template #signInPrompt>
     <div class="sign-in-prompt">
-      <p>🔐 Please sign in or register to share housing opportunities with the community.</p>
+      <p>Please sign in or register to share housing opportunities with the community.</p>
     </div>
   </ng-template>
 
@@ -156,7 +156,7 @@
         <div *ngIf="!listing.photos || listing.photos.length === 0" class="photo-placeholder">
           <span>🏠</span>
         </div>
-        <span *ngIf="listing.verified" class="verified-badge-overlay">✅ Verified</span>
+        <span *ngIf="listing.verified" class="verified-badge-overlay">Verified</span>
       </div>
 
       <div class="listing-content">
@@ -165,25 +165,35 @@
           <span class="price">${{ listing.price | number: '1.0-0' }}<small>/mo</small></span>
         </div>
 
-        <p class="location">📍 {{ listing.location }}</p>
+        <p class="location">{{ listing.location }}</p>
 
         <p class="description">{{ listing.description }}</p>
 
         <div class="listing-footer">
           <div class="owner-info">
-            <span class="owner-name">👤 {{ listing.owner.full_name }}</span>
-            <span class="post-date">🕒 {{ listing.created_at | date: 'mediumDate' }}</span>
+            <span class="owner-name">{{ listing.owner.full_name }}</span>
+            <span class="post-date">{{ listing.created_at | date: 'mediumDate' }}</span>
           </div>
 
-          <div class="contact-info">
-            <a [href]="'mailto:' + listing.contact" class="contact-link"> ✉️ Contact </a>
+          <div class="listing-actions">
+            <a [href]="'mailto:' + listing.contact" class="contact-link">Contact</a>
+            <button
+              *ngIf="(currentUser$ | async) && canDeleteListing(listing, currentUser$ | async)"
+              type="button"
+              class="btn-delete"
+              (click)="deleteListing(listing, $event)"
+              [disabled]="isSubmitting()"
+              title="Delete listing"
+            >
+              Delete
+            </button>
           </div>
         </div>
       </div>
     </article>
 
     <div *ngIf="listings().length === 0" class="empty-state">
-      <p>📭 No listings available yet. Be the first to share one!</p>
+      <p>No listings available yet. Be the first to share one!</p>
     </div>
   </section>
 </div>

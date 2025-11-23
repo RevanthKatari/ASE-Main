@@ -105,5 +105,45 @@ export class ListingDetailComponent implements OnInit {
   goBack(): void {
     this.router.navigate(['/listings']);
   }
+
+  canDeleteListing(listing: Listing, currentUser: any): boolean {
+    if (!currentUser) return false;
+    // Owner can delete their own listing, helpers can delete any listing
+    return listing.owner.id === currentUser.id || currentUser.role !== 'student';
+  }
+
+  deleteListing(): void {
+    const currentUser = this.authService.currentUser;
+    const listing = this.listing();
+
+    if (!currentUser || !listing) {
+      this.errorMessage.set('Please sign in to delete listings.');
+      return;
+    }
+
+    if (!this.canDeleteListing(listing, currentUser)) {
+      this.errorMessage.set('You can only delete your own listings.');
+      return;
+    }
+
+    if (!confirm(`Are you sure you want to delete "${listing.title}"? This action cannot be undone.`)) {
+      return;
+    }
+
+    this.isLoading.set(true);
+    this.errorMessage.set(null);
+
+    this.listingService
+      .deleteListing(listing.id, currentUser.id)
+      .pipe(finalize(() => this.isLoading.set(false)))
+      .subscribe({
+        next: () => {
+          this.router.navigate(['/listings']);
+        },
+        error: (error) => {
+          this.errorMessage.set(error?.error?.error ?? 'Unable to delete listing.');
+        },
+      });
+  }
 }
 
