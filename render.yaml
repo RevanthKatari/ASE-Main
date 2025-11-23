@@ -1,0 +1,24 @@
+services:
+  - type: web
+    name: windsor-hub-api
+    env: python
+    buildCommand: pip install -r backend/requirements.txt
+    startCommand: gunicorn backend.app:app
+    envVars:
+      - key: PORT
+        value: 5000
+      - key: SECRET_KEY
+        generateValue: true
+      - key: FRONTEND_URL
+        sync: false  # Set this after frontend is deployed
+    disk:
+      name: instance
+      mountPath: /opt/render/project/src/backend/instance
+      sizeGB: 1
+
+  - type: web
+    name: windsor-hub-frontend
+    env: static
+    buildCommand: cd frontend/windsor-community-hub && npm install && npm run build
+    staticPublishPath: frontend/windsor-community-hub/dist/windsor-community-hub
+

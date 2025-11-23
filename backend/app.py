@@ -14,7 +14,12 @@ def create_app(config_class: type[Config] = Config) -> Flask:
     app.config.from_object(config_class)
     app.config['MAX_CONTENT_LENGTH'] = 16 * 1024 * 1024  # 16MB max file size
 
-    CORS(app)
+    # Allow CORS from frontend domain (set via environment variable)
+    # Defaults to localhost for local development
+    frontend_url = os.getenv('FRONTEND_URL', 'http://localhost:4200')
+    allowed_origins = [frontend_url, 'http://localhost:4200']
+    CORS(app, origins=allowed_origins, supports_credentials=True)
+    
     db.init_app(app)
     bcrypt.init_app(app)
 
