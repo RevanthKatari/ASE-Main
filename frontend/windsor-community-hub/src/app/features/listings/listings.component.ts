@@ -80,10 +80,13 @@ export class ListingsComponent implements OnInit {
       .pipe(finalize(() => this.isUploadingPhoto.set(false)))
       .subscribe({
         next: (response) => {
-          // Use the API base URL from environment, removing /api suffix for photo URLs
-          const apiBase = environment.apiBaseUrl.replace('/api', '');
-          const photoUrl = `${apiBase}${response.url}`;
-          this.uploadedPhotos.update((photos) => [...photos, photoUrl]);
+          // Backend returns relative URL like "/uploads/filename.jpg"
+          // Construct full URL using backend base URL (without /api)
+          const backendBase = environment.apiBaseUrl.replace('/api', '');
+          const photoUrl = response.url.startsWith('http') 
+            ? response.url 
+            : `${backendBase}${response.url}`;
+          this.uploadedPhotos.update((photos) => [...photos, photoUrl]));
           this.creationMessage.set('Photo uploaded successfully!');
           input.value = ''; // Reset input
         },

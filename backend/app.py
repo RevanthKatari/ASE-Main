@@ -60,7 +60,11 @@ def create_app(config_class: type[Config] = Config) -> Flask:
         upload_dir = os.path.join(app.root_path, "uploads")
         # Create uploads directory if it doesn't exist
         os.makedirs(upload_dir, exist_ok=True)
-        return send_from_directory(upload_dir, filename)
+        # Add CORS headers for image serving
+        response = send_from_directory(upload_dir, filename)
+        response.headers.add('Access-Control-Allow-Origin', '*')
+        response.headers.add('Cache-Control', 'public, max-age=31536000')
+        return response
 
     return app
 

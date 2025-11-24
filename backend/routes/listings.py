@@ -146,19 +146,8 @@ def upload_photo():
     file_path = os.path.join(upload_dir, unique_filename)
     file.save(file_path)
     
-    # Return URL - convert to absolute URL in production
+    # Return relative URL - frontend will construct full URL
+    # The schema will convert it to absolute URL when returning listings
     photo_url = f"/uploads/{unique_filename}"
-    # Try to get backend URL from environment
-    backend_url = os.getenv('BACKEND_URL')
-    if not backend_url:
-        # Fallback: try Railway's public domain
-        railway_domain = os.getenv('RAILWAY_PUBLIC_DOMAIN')
-        if railway_domain:
-            backend_url = f"https://{railway_domain}"
-        else:
-            backend_url = 'http://localhost:5000'
-    backend_url = backend_url.rstrip('/')
-    if not photo_url.startswith('http'):
-        photo_url = f"{backend_url}{photo_url}"
     return jsonify({"url": photo_url}), HTTPStatus.CREATED
 

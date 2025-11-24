@@ -28,19 +28,22 @@ def convert_photo_urls(photos, base_url=None):
         # Try to get backend URL from environment
         base_url = os.getenv('BACKEND_URL')
         if not base_url:
-            # Fallback: try Railway's public domain
-            railway_domain = os.getenv('RAILWAY_PUBLIC_DOMAIN')
-            if railway_domain:
-                base_url = f"https://{railway_domain}"
-            else:
-                base_url = 'http://localhost:5000'
+            # Fallback: use Railway's known URL (hardcoded for now, but should be set via env var)
+            base_url = 'https://web-production-dd64f.up.railway.app'
         base_url = base_url.rstrip('/')
     
     result = []
     for photo in photos:
-        if photo and photo.startswith('/'):
+        if not photo:
+            continue
+        # If already a full URL (http/https), use as-is
+        if photo.startswith('http://') or photo.startswith('https://'):
+            result.append(photo)
+        # If relative URL (starts with /), prepend base URL
+        elif photo.startswith('/'):
             result.append(f"{base_url}{photo}")
-        elif photo:
+        # Otherwise, assume it's already a full URL or handle as relative
+        else:
             result.append(photo)
     return result
 
