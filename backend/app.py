@@ -35,6 +35,16 @@ def create_app(config_class: type[Config] = Config) -> Flask:
     # Create database tables if they don't exist
     with app.app_context():
         db.create_all()
+        
+        # Seed initial data if database is empty (first run)
+        from .models import User
+        if User.query.count() == 0:
+            try:
+                from .seed_data import seed
+                seed()
+                print("✅ Seed data created successfully (helper account, sample listings, events)")
+            except Exception as e:
+                print(f"⚠️  Warning: Could not seed data: {e}")
 
     register_blueprints(app)
 
@@ -45,6 +55,8 @@ def create_app(config_class: type[Config] = Config) -> Flask:
     @app.get("/uploads/<path:filename>")
     def serve_upload(filename):
         upload_dir = os.path.join(app.root_path, "uploads")
+        # Create uploads directory if it doesn't exist
+        os.makedirs(upload_dir, exist_ok=True)
         return send_from_directory(upload_dir, filename)
 
     return app
