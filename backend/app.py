@@ -17,8 +17,17 @@ def create_app(config_class: type[Config] = Config) -> Flask:
     # Allow CORS from frontend domain (set via environment variable)
     # Defaults to localhost for local development
     frontend_url = os.getenv('FRONTEND_URL', 'http://localhost:4200')
-    allowed_origins = [frontend_url, 'http://localhost:4200']
-    CORS(app, origins=allowed_origins, supports_credentials=True)
+    # Support both with and without trailing slash
+    frontend_url_clean = frontend_url.rstrip('/')
+    allowed_origins = [
+        frontend_url_clean,
+        f'{frontend_url_clean}/',
+        'http://localhost:4200',
+        'http://localhost:4200/'
+    ]
+    # Remove duplicates while preserving order
+    allowed_origins = list(dict.fromkeys(allowed_origins))
+    CORS(app, origins=allowed_origins, supports_credentials=True, allow_headers=['Content-Type', 'Authorization'])
     
     db.init_app(app)
     bcrypt.init_app(app)

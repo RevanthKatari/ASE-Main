@@ -7,6 +7,7 @@ import { finalize } from 'rxjs';
 import { AuthService } from '../../core/services/auth.service';
 import { ListingService } from '../../core/services/listing.service';
 import { Listing } from '../../core/models/listing';
+import { environment } from '../../../environments/environment';
 
 @Component({
   selector: 'app-listings',
@@ -79,7 +80,9 @@ export class ListingsComponent implements OnInit {
       .pipe(finalize(() => this.isUploadingPhoto.set(false)))
       .subscribe({
         next: (response) => {
-          const photoUrl = `http://localhost:5000${response.url}`;
+          // Use the API base URL from environment, removing /api suffix for photo URLs
+          const apiBase = environment.apiBaseUrl.replace('/api', '');
+          const photoUrl = `${apiBase}${response.url}`;
           this.uploadedPhotos.update((photos) => [...photos, photoUrl]);
           this.creationMessage.set('Photo uploaded successfully!');
           input.value = ''; // Reset input
