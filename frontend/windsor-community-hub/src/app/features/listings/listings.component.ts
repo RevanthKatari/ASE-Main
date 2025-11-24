@@ -86,7 +86,7 @@ export class ListingsComponent implements OnInit {
           const photoUrl = response.url.startsWith('http') 
             ? response.url 
             : `${backendBase}${response.url}`;
-          this.uploadedPhotos.update((photos) => [...photos, photoUrl]));
+          this.uploadedPhotos.update((photos) => [...photos, photoUrl]);
           this.creationMessage.set('Photo uploaded successfully!');
           input.value = ''; // Reset input
         },
