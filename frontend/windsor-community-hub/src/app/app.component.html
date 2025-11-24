@@ -12,9 +12,6 @@
       <a routerLink="/events" routerLinkActive="active">
         Events
       </a>
-      <a routerLink="/cs-events" routerLinkActive="active">
-        CS Events
-      </a>
       <a
         *ngIf="(currentUser$ | async)?.role !== 'student'"
         routerLink="/moderation"
