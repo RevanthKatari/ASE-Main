@@ -5,10 +5,9 @@ from .models import Event, Listing, User
 
 
 def seed():
-    """Seed initial data. Safe to run multiple times - checks if data exists first."""
-    # Don't create a new app - use the existing one from the context
-    # This function is called from app.py which already has an app context
-    
+    """Seed initial data. Safe to run multiple times - checks if data exists first.
+    Must be called within an app context (from app.py or with app.app_context()).
+    """
     # Check if helper user already exists
     existing_helper = User.query.filter_by(email="helper@windsorhub.ca").first()
     if existing_helper:
