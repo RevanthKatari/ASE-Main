@@ -23,6 +23,10 @@ def create_app(config_class: type[Config] = Config) -> Flask:
     db.init_app(app)
     bcrypt.init_app(app)
 
+    # Create database tables if they don't exist
+    with app.app_context():
+        db.create_all()
+
     register_blueprints(app)
 
     @app.get("/health")
