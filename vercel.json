@@ -1,6 +1,6 @@
 {
-  "buildCommand": "cd frontend/windsor-community-hub && npm install && npm run build",
-  "outputDirectory": "frontend/windsor-community-hub/dist/windsor-community-hub/browser",
+  "buildCommand": "npm install && npm run build",
+  "outputDirectory": "dist/windsor-community-hub/browser",
   "rewrites": [
     {
       "source": "/(.*)",
