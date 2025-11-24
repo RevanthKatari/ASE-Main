@@ -6,7 +6,6 @@ import { ListingsComponent } from './features/listings/listings.component';
 import { ListingDetailComponent } from './features/listings/listing-detail.component';
 import { LoginComponent } from './features/auth/login.component';
 import { ModerationComponent } from './features/moderation/moderation.component';
-import { CSEventsComponent } from './features/cs-events/cs-events.component';
 
 export const routes: Routes = [
   { path: '', redirectTo: 'listings', pathMatch: 'full' },
@@ -15,7 +14,6 @@ export const routes: Routes = [
   { path: 'listings/:id', component: ListingDetailComponent },
   { path: 'events', component: EventsComponent },
   { path: 'events/:id', component: EventDetailComponent },
-  { path: 'cs-events', component: CSEventsComponent },
   { path: 'moderation', component: ModerationComponent },
   { path: '**', redirectTo: 'listings' },
 ];

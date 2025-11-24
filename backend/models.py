@@ -77,25 +77,3 @@ class Comment(db.Model):
     listing = db.relationship("Listing", back_populates="comments")
     event = db.relationship("Event", back_populates="comments")
 
-
-class CSEvent(db.Model):
-    __tablename__ = "cs_events"
-
-    id = db.Column(db.Integer, primary_key=True)
-    title = db.Column(db.String(300), nullable=False)
-    description = db.Column(db.Text, nullable=True)
-    abstract = db.Column(db.Text, nullable=True)
-    event_date = db.Column(db.DateTime, nullable=True)
-    event_time = db.Column(db.String(50), nullable=True)
-    location = db.Column(db.String(300), nullable=True)
-    presenter = db.Column(db.String(200), nullable=True)
-    event_url = db.Column(db.String(500), nullable=True)
-    workshop_outline = db.Column(db.Text, nullable=True)
-    prerequisites = db.Column(db.Text, nullable=True)
-    biography = db.Column(db.Text, nullable=True)
-    registration_link = db.Column(db.String(500), nullable=True)
-    scraped_at = db.Column(db.DateTime, server_default=func.now(), nullable=False)
-    last_updated = db.Column(db.DateTime, server_default=func.now(), onupdate=func.now(), nullable=False)
-    
-    # Store raw HTML or additional data if needed
-    raw_data = db.Column(JSON, nullable=True)
