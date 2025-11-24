@@ -28,13 +28,13 @@ This guide will help you deploy the Windsor Community Hub to Render.com.
    - `PORT` = `5000` (Render sets this automatically, but good to have)
    - `SECRET_KEY` = Generate using: `python -c "import secrets; print(secrets.token_hex(32))"`
    - `FRONTEND_URL` = Leave empty for now (set after frontend deploys)
+   - `DATABASE_URL` = (See note below about database options)
 
-6. **Add Persistent Disk** (for SQLite database):
-   - Go to **"Disks"** tab
-   - Click **"Add Disk"**
-   - **Name**: `instance`
-   - **Mount Path**: `/opt/render/project/src/backend/instance`
-   - **Size**: 1 GB
+6. **Important - Database Storage**:
+   - **Free Tier Limitation**: Render's free tier uses ephemeral filesystem - SQLite data will be lost on restarts
+   - **Option 1 (Recommended)**: Use Render's free PostgreSQL database (see "Database Setup" section below)
+   - **Option 2**: Use SQLite for testing (data won't persist, but works for demos)
+   - **Option 3**: Upgrade to paid plan for persistent disks
 
 7. Click **"Create Web Service"**
 8. Wait for deployment to complete
@@ -48,6 +48,46 @@ This guide will help you deploy the Windsor Community Hub to Render.com.
 4. Connect your GitHub repository
 5. Render will automatically detect `render.yaml` and create both services
 6. Update environment variables as needed
+
+## Database Setup (Important!)
+
+### Option 1: PostgreSQL (Recommended for Production)
+
+Render offers a **free PostgreSQL database** that persists data:
+
+1. In Render Dashboard, click **"New +"** → **"PostgreSQL"**
+2. Configure:
+   - **Name**: `windsor-hub-db`
+   - **Database**: `windsor_hub`
+   - **User**: Auto-generated
+   - **Region**: Same as your backend
+   - **Plan**: Free
+3. Click **"Create Database"**
+4. Copy the **Internal Database URL** (starts with `postgresql://`)
+5. Go to your backend service → **Environment** tab
+6. Add environment variable:
+   - **Key**: `DATABASE_URL`
+   - **Value**: Paste the PostgreSQL URL
+7. **Update your backend code** to use PostgreSQL instead of SQLite (see below)
+
+### Option 2: SQLite (Testing Only)
+
+- SQLite will work but **data will be lost** on service restarts/redeploys
+- Only suitable for testing/demos
+- No additional setup needed (uses default SQLite)
+
+### Updating Backend for PostgreSQL
+
+If using PostgreSQL, you'll need to update `backend/config.py`:
+
+```python
+SQLALCHEMY_DATABASE_URI = os.getenv(
+    "DATABASE_URL",
+    f"sqlite:///{BASE_DIR / 'instance' / 'app.db'}",  # Fallback to SQLite
+)
+```
+
+The code already supports this! Just set the `DATABASE_URL` environment variable.
 
 ## Step 2: Deploy Frontend (Angular)
 
@@ -104,9 +144,9 @@ This guide will help you deploy the Windsor Community Hub to Render.com.
 
 ### Database Persistence
 
-- SQLite database is stored on the persistent disk
-- Data persists across deployments
-- For production, consider upgrading to Render PostgreSQL (free tier available)
+- **Free Tier**: SQLite data is **NOT persistent** - will be lost on restarts
+- **Recommended**: Use Render's free PostgreSQL database for data persistence
+- **Alternative**: Upgrade to paid plan for persistent disk storage
 
 ### File Uploads
 
@@ -134,9 +174,9 @@ Never commit secrets to your repository. Always use Render's environment variabl
 - Ensure no trailing slashes in URLs
 
 ### Database Not Persisting
-- Verify disk is mounted correctly
-- Check disk mount path matches configuration
-- Ensure `instance/` directory exists
+- **Free Tier Limitation**: SQLite data is ephemeral on free tier
+- **Solution**: Use Render PostgreSQL database (free tier available)
+- If using PostgreSQL, verify `DATABASE_URL` environment variable is set correctly
 
 ### 502 Bad Gateway
 - Service might be spinning up (normal on free tier)
@@ -164,9 +204,9 @@ Never commit secrets to your repository. Always use Render's environment variabl
    - Consider adding error tracking (Sentry, etc.)
 
 4. **Upgrade considerations**:
-   - PostgreSQL for better database performance
-   - Cloud storage for file uploads
-   - Paid tier to avoid spin-down delays
+   - **PostgreSQL** (free tier available) - Required for data persistence on free tier
+   - **Cloud storage** for file uploads (Cloudinary, Supabase Storage)
+   - **Paid tier** to avoid spin-down delays and get persistent disks
 
 ## Support
 
