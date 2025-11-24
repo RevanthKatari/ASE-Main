@@ -2,7 +2,7 @@
 nixPkgs = ["python3"]
 
 [phases.install]
-cmds = ["pip install -r backend/requirements.txt"]
+cmds = ["python3 -m pip install -r backend/requirements.txt"]
 
 [start]
 cmd = "gunicorn backend.app:app --bind 0.0.0.0:$PORT"
