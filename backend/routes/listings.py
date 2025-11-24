@@ -146,7 +146,10 @@ def upload_photo():
     file_path = os.path.join(upload_dir, unique_filename)
     file.save(file_path)
     
-    # Return URL
+    # Return URL - convert to absolute URL in production
     photo_url = f"/uploads/{unique_filename}"
+    backend_url = os.getenv('BACKEND_URL', 'http://localhost:5000').rstrip('/')
+    if not photo_url.startswith('http'):
+        photo_url = f"{backend_url}{photo_url}"
     return jsonify({"url": photo_url}), HTTPStatus.CREATED
 
