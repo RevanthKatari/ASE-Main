@@ -36,15 +36,18 @@ def create_app(config_class: type[Config] = Config) -> Flask:
     with app.app_context():
         db.create_all()
         
-        # Seed initial data if database is empty (first run)
+        # Seed initial data if helper account doesn't exist
         from .models import User
-        if User.query.count() == 0:
+        helper_exists = User.query.filter_by(email="helper@windsorhub.ca").first()
+        if not helper_exists:
             try:
                 from .seed_data import seed
                 seed()
                 print("✅ Seed data created successfully (helper account, sample listings, events)")
             except Exception as e:
                 print(f"⚠️  Warning: Could not seed data: {e}")
+                import traceback
+                traceback.print_exc()
 
     register_blueprints(app)
 

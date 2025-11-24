@@ -1,26 +1,22 @@
 from datetime import datetime, timedelta, timezone
 
-from .app import create_app
 from .database import db
 from .models import Event, Listing, User
 
 
 def seed():
     """Seed initial data. Safe to run multiple times - checks if data exists first."""
-    app = create_app()
+    # Don't create a new app - use the existing one from the context
+    # This function is called from app.py which already has an app context
+    
+    # Check if helper user already exists
+    existing_helper = User.query.filter_by(email="helper@windsorhub.ca").first()
+    if existing_helper:
+        print("ℹ️  Helper account already exists. Skipping seed.")
+        return
 
-    with app.app_context():
-        # Only create tables if they don't exist (don't drop existing data)
-        db.create_all()
-        
-        # Check if helper user already exists
-        existing_helper = User.query.filter_by(email="helper@windsorhub.ca").first()
-        if existing_helper:
-            print("ℹ️  Seed data already exists. Skipping seed.")
-            return
-
-        helper = User(full_name="Community Helper", email="helper@windsorhub.ca", role="helper")
-        helper.set_password("Password123!")
+    helper = User(full_name="Community Helper", email="helper@windsorhub.ca", role="helper")
+    helper.set_password("Password123!")
 
         student = User(full_name="International Student", email="student@windsorhub.ca", role="student")
         student.set_password("Password123!")
