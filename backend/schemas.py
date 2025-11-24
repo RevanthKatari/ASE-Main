@@ -59,15 +59,11 @@ class ListingSchema(BaseSchema):
     def convert_photos(self, data, **kwargs):
         """Convert photo URLs to absolute URLs"""
         if 'photos' in data and data['photos']:
-            # Try to get backend URL from environment, or construct from request
+            # Try multiple ways to get the backend URL
             base_url = os.getenv('BACKEND_URL')
             if not base_url:
-                # Fallback: try to get from RAILWAY_PUBLIC_DOMAIN or construct default
-                railway_domain = os.getenv('RAILWAY_PUBLIC_DOMAIN')
-                if railway_domain:
-                    base_url = f"https://{railway_domain}"
-                else:
-                    base_url = 'http://localhost:5000'
+                # Fallback: use Railway's known URL (hardcoded for now, but should be set via env var)
+                base_url = 'https://web-production-dd64f.up.railway.app'
             base_url = base_url.rstrip('/')
             data['photos'] = convert_photo_urls(data['photos'], base_url)
         return data
