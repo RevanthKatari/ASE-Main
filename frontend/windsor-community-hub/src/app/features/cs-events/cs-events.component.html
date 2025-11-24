@@ -1,0 +1,92 @@
+<div class="cs-events-container">
+  <header class="page-header">
+    <div>
+      <h1>CS Events</h1>
+      <p>Events from the University of Windsor School of Computer Science. Updated daily from the official calendar.</p>
+    </div>
+    <div class="header-actions">
+      <button 
+        type="button" 
+        class="btn-scrape" 
+        (click)="scrapeEvents()" 
+        [disabled]="isScraping() || isLoading()"
+        title="Manually fetch latest events from UWindsor CS calendar"
+      >
+        <span *ngIf="!isScraping()">Refresh Events</span>
+        <span *ngIf="isScraping()">Scraping...</span>
+      </button>
+      <button 
+        type="button" 
+        class="btn-refresh" 
+        (click)="loadEvents()" 
+        [disabled]="isLoading()"
+      >
+        Reload
+      </button>
+    </div>
+  </header>
+
+  <div class="alert alert-error" *ngIf="errorMessage() as error">{{ error }}</div>
+  <div class="alert alert-success" *ngIf="feedbackMessage() as message">{{ message }}</div>
+
+  <!-- Loading State -->
+  <section *ngIf="isLoading()" class="loading-state">
+    <div class="spinner"></div>
+    <p>Loading CS events...</p>
+  </section>
+
+  <!-- Events Grid -->
+  <section *ngIf="!isLoading()" class="events-grid">
+    <article *ngFor="let event of events()" class="event-card">
+      <div class="event-icon">🎓</div>
+
+      <div class="event-content">
+        <h3>{{ event.title }}</h3>
+
+        <div class="event-details" *ngIf="event.event_date || event.event_time || event.location">
+          <p class="event-datetime" *ngIf="event.event_date || event.event_time">
+            {{ formatDateTime(event) }}
+          </p>
+          <p class="event-location" *ngIf="event.location">{{ event.location }}</p>
+          <p class="event-presenter" *ngIf="event.presenter">
+            <strong>Presenter:</strong> {{ event.presenter }}
+          </p>
+        </div>
+
+        <p class="event-description" *ngIf="event.description">
+          {{ event.description }}
+        </p>
+
+        <div class="event-abstract" *ngIf="event.abstract">
+          <strong>Abstract:</strong>
+          <p>{{ event.abstract }}</p>
+        </div>
+
+        <div class="event-footer">
+          <a 
+            *ngIf="event.event_url" 
+            [href]="event.event_url" 
+            target="_blank" 
+            class="btn-link"
+            (click)="openEventUrl(event.event_url)"
+          >
+            View Details →
+          </a>
+          <a 
+            *ngIf="event.registration_link" 
+            [href]="event.registration_link" 
+            target="_blank" 
+            class="btn-register"
+          >
+            Register
+          </a>
+        </div>
+      </div>
+    </article>
+
+    <div *ngIf="events().length === 0" class="empty-state">
+      <p>No CS events found. Click "Refresh Events" to fetch events from the UWindsor CS calendar.</p>
+    </div>
+  </section>
+</div>
+
