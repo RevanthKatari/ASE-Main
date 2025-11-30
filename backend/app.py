@@ -1,12 +1,120 @@
 import os
+import atexit
 
 from flask import Flask, jsonify, send_from_directory
 from flask_cors import CORS
+from apscheduler.schedulers.background import BackgroundScheduler
+from apscheduler.triggers.cron import CronTrigger
 
 from .config import Config
 from .database import bcrypt, db
-from .models import Event, Listing, User  # noqa: F401
+from .models import Event, Listing, User, CSEvent  # noqa: F401
 from .routes import register_blueprints
+
+# Global scheduler instance
+_scheduler = None
+
+
+def start_cs_events_scheduler(app: Flask):
+    """Start the CS events scheduler. Should be called once in the master process."""
+    global _scheduler
+    
+    if _scheduler is not None:
+        print("⚠️  Scheduler already started, skipping...")
+        return
+    
+    try:
+        _scheduler = BackgroundScheduler()
+        
+        def scrape_cs_events_job():
+            """Background job to scrape CS events"""
+            with app.app_context():
+                try:
+                    from .services.cs_event_scraper import CSEventScraper
+                    from .database import db
+                    from .models import CSEvent
+                    from datetime import datetime
+                    
+                    scraper = CSEventScraper()
+                    fetched_events = scraper.fetch_events()
+                    
+                    added_count = 0
+                    updated_count = 0
+                    
+                    for event_data in fetched_events:
+                        try:
+                            existing = None
+                            if event_data.get('event_date'):
+                                existing = CSEvent.query.filter_by(
+                                    title=event_data['title'],
+                                    event_date=event_data['event_date']
+                                ).first()
+                            else:
+                                existing = CSEvent.query.filter_by(
+                                    title=event_data['title'],
+                                    event_url=event_data.get('event_url')
+                                ).first()
+                            
+                            if existing:
+                                existing.description = event_data.get('description')
+                                existing.abstract = event_data.get('abstract')
+                                existing.event_time = event_data.get('event_time')
+                                existing.location = event_data.get('location')
+                                existing.event_url = event_data.get('event_url')
+                                existing.presenter = event_data.get('presenter')
+                                existing.workshop_outline = event_data.get('workshop_outline')
+                                existing.prerequisites = event_data.get('prerequisites')
+                                existing.biography = event_data.get('biography')
+                                existing.registration_link = event_data.get('registration_link')
+                                existing.raw_data = event_data.get('raw_data')
+                                existing.last_updated = datetime.utcnow()
+                                updated_count += 1
+                            else:
+                                new_event = CSEvent(
+                                    title=event_data['title'],
+                                    description=event_data.get('description'),
+                                    abstract=event_data.get('abstract'),
+                                    event_date=event_data.get('event_date'),
+                                    event_time=event_data.get('event_time'),
+                                    location=event_data.get('location'),
+                                    event_url=event_data.get('event_url'),
+                                    presenter=event_data.get('presenter'),
+                                    workshop_outline=event_data.get('workshop_outline'),
+                                    prerequisites=event_data.get('prerequisites'),
+                                    biography=event_data.get('biography'),
+                                    registration_link=event_data.get('registration_link'),
+                                    raw_data=event_data.get('raw_data')
+                                )
+                                db.session.add(new_event)
+                                added_count += 1
+                        except Exception as e:
+                            print(f"Error processing event in scheduled job: {e}")
+                            continue
+                    
+                    db.session.commit()
+                    print(f"✅ CS Events scraping job completed: {added_count} added, {updated_count} updated")
+                except Exception as e:
+                    print(f"❌ Error in CS Events scraping job: {e}")
+                    import traceback
+                    traceback.print_exc()
+        
+        # Schedule job to run daily at 2 AM
+        _scheduler.add_job(
+            func=scrape_cs_events_job,
+            trigger=CronTrigger(hour=2, minute=0),
+            id='scrape_cs_events',
+            name='Scrape CS Events from UWindsor',
+            replace_existing=True
+        )
+        _scheduler.start()
+        print("✅ CS Events scheduler started")
+        
+        # Shut down scheduler when app exits
+        atexit.register(lambda: _scheduler.shutdown() if _scheduler else None)
+    except Exception as e:
+        print(f"⚠️  Warning: Could not start scheduler: {e}")
+        import traceback
+        traceback.print_exc()
 
 
 def create_app(config_class: type[Config] = Config) -> Flask:
@@ -50,6 +158,11 @@ def create_app(config_class: type[Config] = Config) -> Flask:
                 traceback.print_exc()
 
     register_blueprints(app)
+
+    # Scheduler will be started by gunicorn_config.py in the master process
+    # For development mode (not using gunicorn), start scheduler here
+    if os.getenv('FLASK_ENV') == 'development' and os.getenv('ENABLE_SCHEDULER', 'true').lower() == 'true':
+        start_cs_events_scheduler(app)
 
     @app.get("/health")
     def health():
