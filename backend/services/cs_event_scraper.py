@@ -1,4 +1,6 @@
+import os
 import re
+import time
 from datetime import datetime
 from typing import List, Dict, Optional
 from bs4 import BeautifulSoup
@@ -11,13 +13,19 @@ class CSEventScraper:
     def __init__(self):
         self.session = requests.Session()
         self.session.headers.update({
-            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'
+            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36',
+            'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
+            'Accept-Language': 'en-US,en;q=0.5',
+            'Accept-Encoding': 'gzip, deflate',
+            'Connection': 'keep-alive',
         })
+        # Set longer timeout for Railway
+        self.timeout = 30
     
     def fetch_events(self) -> List[Dict]:
         """Fetch and parse events from the UWindsor CS calendar"""
         try:
-            response = self.session.get(self.BASE_URL, timeout=15)
+            response = self.session.get(self.BASE_URL, timeout=self.timeout)
             response.raise_for_status()
             soup = BeautifulSoup(response.content, 'lxml')
             
@@ -55,14 +63,28 @@ class CSEventScraper:
                     event_urls.add(event['event_url'])
                     events.append(event)
             
-            # Fetch detailed information for each event
+            # Fetch detailed information for each event (with rate limiting for Railway)
+            # Limit detail fetches to avoid timeouts on Railway
             detailed_events = []
+            max_detail_fetches = int(os.getenv('MAX_EVENT_DETAIL_FETCHES', '15'))
+            fetched_count = 0
+            import time
+            
             for event in events:
-                if event.get('event_url'):
-                    detailed = self._fetch_event_details(event['event_url'], event)
-                    if detailed:
-                        detailed_events.append(detailed)
-                    else:
+                if event.get('event_url') and fetched_count < max_detail_fetches:
+                    try:
+                        detailed = self._fetch_event_details(event['event_url'], event)
+                        if detailed:
+                            detailed_events.append(detailed)
+                        else:
+                            detailed_events.append(event)
+                        fetched_count += 1
+                        # Small delay to avoid rate limiting and reduce load
+                        if fetched_count < max_detail_fetches:
+                            time.sleep(0.5)
+                    except Exception as e:
+                        print(f"Warning: Could not fetch details for {event.get('title', 'unknown')}: {e}")
+                        # Continue with base event data if detail fetch fails
                         detailed_events.append(event)
                 else:
                     detailed_events.append(event)
@@ -193,7 +215,7 @@ class CSEventScraper:
     def _fetch_event_details(self, url: str, base_event: Dict) -> Optional[Dict]:
         """Fetch detailed information from an individual event page"""
         try:
-            response = self.session.get(url, timeout=15)
+            response = self.session.get(url, timeout=self.timeout)
             response.raise_for_status()
             soup = BeautifulSoup(response.content, 'lxml')
             

@@ -1,6 +1,7 @@
+import os
 from datetime import datetime
 from http import HTTPStatus
-from flask import Blueprint, jsonify
+from flask import Blueprint, jsonify, request
 
 from ..database import db
 from ..models import CSEvent
@@ -67,8 +68,22 @@ def get_cs_event(event_id):
 @cs_events_bp.post("/scrape")
 def scrape_cs_events():
     """Manually trigger scraping of CS events"""
-    scraper = CSEventScraper()
-    fetched_events = scraper.fetch_events()
+    # Optional API key authentication (set CS_SCRAPE_API_KEY env var to enable)
+    api_key = request.headers.get('X-API-Key')
+    expected_key = os.getenv('CS_SCRAPE_API_KEY')
+    if expected_key and api_key != expected_key:
+        return jsonify({"error": "Unauthorized"}), HTTPStatus.UNAUTHORIZED
+    
+    try:
+        scraper = CSEventScraper()
+        fetched_events = scraper.fetch_events()
+    except Exception as e:
+        import traceback
+        traceback.print_exc()
+        return jsonify({
+            'error': 'Scraping failed',
+            'message': str(e)
+        }), HTTPStatus.INTERNAL_SERVER_ERROR
     
     added_count = 0
     updated_count = 0
