@@ -1,0 +1,135 @@
+<div class="events-container">
+  <header class="page-header">
+    <div>
+      <h1>Community Events</h1>
+      <p>Connect with your UniLife community through meetups, workshops, and celebrations.</p>
+    </div>
+    <button type="button" class="btn-refresh" (click)="loadEvents()" [disabled]="isLoading()">
+      Refresh
+    </button>
+  </header>
+
+  <div class="alert alert-error" *ngIf="errorMessage() as error">{{ error }}</div>
+
+  <div class="alert alert-success" *ngIf="feedbackMessage() as message">{{ message }}</div>
+
+  <!-- Create Event Form -->
+  <section class="create-section" *ngIf="currentUser$ | async as currentUser; else signInPrompt">
+    <h2>Host an Event</h2>
+    <form [formGroup]="form" (ngSubmit)="submit()" class="modern-form">
+      <div class="form-grid">
+        <label class="form-label">
+          <span class="label-text">Event Title *</span>
+          <input
+            type="text"
+            formControlName="title"
+            placeholder="e.g., Community Welcome Dinner"
+            class="form-input"
+          />
+        </label>
+
+        <label class="form-label">
+          <span class="label-text">Start Time *</span>
+          <input type="datetime-local" formControlName="start_time" class="form-input" />
+        </label>
+      </div>
+
+      <label class="form-label">
+        <span class="label-text">Location *</span>
+        <input
+          type="text"
+          formControlName="location"
+          placeholder="e.g., Windsor Community Centre"
+          class="form-input"
+        />
+      </label>
+
+      <label class="form-label">
+        <span class="label-text">Description *</span>
+        <textarea
+          formControlName="description"
+          rows="4"
+          placeholder="Describe the event, what to expect, and any special notes..."
+          class="form-textarea"
+        ></textarea>
+      </label>
+
+      <label class="form-label">
+        <span class="label-text">Luma Event Embed URL (Optional)</span>
+        <input
+          type="url"
+          formControlName="iframe_url"
+          placeholder="e.g., https://lu.ma/embed/event/evt-xxx/simple"
+          class="form-input"
+        />
+        <small class="form-hint">
+          If you have a Luma event, paste the embed URL here (e.g., from the "Embed" option in Luma)
+        </small>
+      </label>
+
+      <button type="submit" class="btn-submit" [disabled]="isSubmitting() || form.invalid">
+        <span *ngIf="!isSubmitting()">Publish Event</span>
+        <span *ngIf="isSubmitting()">Publishing...</span>
+      </button>
+
+      <small class="form-help">
+        Hosted by <strong>{{ currentUser.full_name }}</strong>. Please include accessibility information when
+        possible.
+      </small>
+    </form>
+  </section>
+
+  <ng-template #signInPrompt>
+    <div class="sign-in-prompt">
+      <p>Please sign in to create and share community events.</p>
+    </div>
+  </ng-template>
+
+  <!-- Loading State -->
+  <section *ngIf="isLoading()" class="loading-state">
+    <div class="spinner"></div>
+    <p>Loading events...</p>
+  </section>
+
+  <!-- Events Grid -->
+  <section *ngIf="!isLoading()" class="events-grid">
+    <article *ngFor="let event of events()" class="event-card" [routerLink]="['/events', event.id]">
+      <div class="event-icon">📅</div>
+
+      <div class="event-content">
+        <h3>{{ event.title }}</h3>
+
+        <div class="event-details">
+          <p class="event-datetime">
+            {{ event.start_time | date: 'fullDate' }}<br />
+            {{ event.start_time | date: 'shortTime' }}
+          </p>
+          <p class="event-location">{{ event.location }}</p>
+        </div>
+
+        <p class="event-description">{{ event.description }}</p>
+
+        <div class="event-footer">
+          <div class="event-meta">
+            <span class="event-creator">{{ event.creator.full_name }}</span>
+            <span class="event-posted">Posted {{ event.created_at | date: 'mediumDate' }}</span>
+          </div>
+          <button
+            *ngIf="(currentUser$ | async) && canDeleteEvent(event, currentUser$ | async)"
+            type="button"
+            class="btn-delete"
+            (click)="deleteEvent(event, $event)"
+            [disabled]="isSubmitting()"
+            title="Delete event"
+          >
+            Delete
+          </button>
+        </div>
+      </div>
+    </article>
+
+    <div *ngIf="events().length === 0" class="empty-state">
+      <p>No upcoming events yet. Be the first to organize one!</p>
+    </div>
+  </section>
+</div>

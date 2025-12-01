@@ -1,0 +1,55 @@
+<div class="app-shell">
+  <header class="top-nav">
+    <a routerLink="/listings" class="brand" (click)="closeMobileMenu()">
+      <span class="brand-icon">🏠</span>
+      <span class="brand-text">{{ title }}</span>
+    </a>
+
+    <button type="button" class="mobile-menu-toggle" (click)="toggleMobileMenu()" aria-label="Toggle menu">
+      <span class="hamburger-icon" [class.open]="isMobileMenuOpen()">☰</span>
+    </button>
+
+    <nav class="links" [class.mobile-open]="isMobileMenuOpen()">
+      <a routerLink="/listings" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: true }" (click)="closeMobileMenu()">
+        <span class="nav-icon">🏠</span>
+        Housing
+      </a>
+      <a routerLink="/events" routerLinkActive="active" (click)="closeMobileMenu()">
+        <span class="nav-icon">📅</span>
+        Events
+      </a>
+      <a
+        *ngIf="(currentUser$ | async)?.role !== 'student'"
+        routerLink="/moderation"
+        routerLinkActive="active"
+        (click)="closeMobileMenu()"
+      >
+        <span class="nav-icon">🛡️</span>
+        Moderation
+      </a>
+    </nav>
+
+    <div class="auth-area">
+      <ng-container *ngIf="currentUser$ | async as user; else guestLinks">
+        <div class="user-info">
+          <span class="user-avatar">{{ user.full_name.charAt(0).toUpperCase() }}</span>
+          <div class="user-details">
+            <span class="user-name">{{ user.full_name }}</span>
+            <span class="user-role">{{ user.role }}</span>
+          </div>
+        </div>
+        <button type="button" (click)="logout()" class="btn-signout">Sign Out</button>
+      </ng-container>
+      <ng-template #guestLinks>
+        <a routerLink="/login" routerLinkActive="active" class="btn-signin" (click)="closeMobileMenu()">Sign In</a>
+      </ng-template>
+    </div>
+  </header>
+
+  <main class="content">
+    <router-outlet />
+  </main>
+
+  <footer class="footer">
+  </footer>
+</div>

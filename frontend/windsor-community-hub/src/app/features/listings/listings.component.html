@@ -1,0 +1,199 @@
+<div class="listings-container">
+  <header class="page-header">
+    <div>
+      <h1>Housing Listings</h1>
+      <p>Find safe, verified accommodations shared by UniLife community members.</p>
+    </div>
+    <button type="button" class="btn-refresh" (click)="loadListings()" [disabled]="isLoading()">
+      Refresh
+    </button>
+  </header>
+
+  <div class="alert alert-error" *ngIf="errorMessage() as error">
+    {{ error }}
+  </div>
+
+  <div class="alert alert-success" *ngIf="creationMessage() as message">
+    {{ message }}
+  </div>
+
+  <!-- Create Listing Form -->
+  <section class="create-section" *ngIf="currentUser$ | async as currentUser; else signInPrompt">
+    <h2>Share a Housing Opportunity</h2>
+    <form [formGroup]="form" (ngSubmit)="submit()" class="modern-form">
+      <div class="form-grid">
+        <label class="form-label">
+          <span class="label-text">Title *</span>
+          <input
+            type="text"
+            formControlName="title"
+            placeholder="e.g., Spacious Room near Campus"
+            class="form-input"
+          />
+        </label>
+
+        <label class="form-label">
+          <span class="label-text">Monthly Rent (CAD) *</span>
+          <input
+            type="number"
+            formControlName="price"
+            min="0"
+            step="25"
+            placeholder="650"
+            class="form-input"
+          />
+        </label>
+      </div>
+
+      <label class="form-label">
+        <span class="label-text">Location *</span>
+        <input
+          type="text"
+          formControlName="location"
+          placeholder="e.g., Downtown Windsor, Near University"
+          class="form-input"
+        />
+      </label>
+
+      <label class="form-label">
+        <span class="label-text">Contact Information *</span>
+        <input
+          type="text"
+          formControlName="contact"
+          placeholder="Email or phone number"
+          class="form-input"
+        />
+      </label>
+
+      <label class="form-label">
+        <span class="label-text">Description *</span>
+        <textarea
+          formControlName="description"
+          rows="4"
+          placeholder="Describe the accommodation, amenities, rules, and any other relevant details..."
+          class="form-textarea"
+        ></textarea>
+      </label>
+
+      <!-- Photo Upload Section -->
+      <div class="photo-upload-section">
+        <label class="form-label">
+          <span class="label-text">Photos (Optional)</span>
+          <div class="upload-area">
+            <input
+              type="file"
+              accept="image/*"
+              (change)="onFileSelected($event)"
+              [disabled]="isUploadingPhoto()"
+              class="file-input"
+              #fileInput
+            />
+            <button
+              type="button"
+              class="btn-upload"
+              (click)="fileInput.click()"
+              [disabled]="isUploadingPhoto()"
+            >
+              <span *ngIf="!isUploadingPhoto()">Add Photo</span>
+              <span *ngIf="isUploadingPhoto()">Uploading...</span>
+            </button>
+          </div>
+        </label>
+
+        <!-- Preview uploaded photos -->
+        <div class="photo-preview-grid" *ngIf="uploadedPhotos().length > 0">
+          <div *ngFor="let photo of uploadedPhotos(); let i = index" class="photo-preview">
+            <img [src]="photo" [alt]="'Photo ' + (i + 1)" />
+            <button type="button" class="btn-remove-photo" (click)="removePhoto(i)" title="Remove photo">
+              ✕
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <button type="submit" class="btn-submit" [disabled]="isSubmitting() || form.invalid">
+        <span *ngIf="!isSubmitting()">Publish Listing</span>
+        <span *ngIf="isSubmitting()">Publishing...</span>
+      </button>
+
+      <small class="form-help">
+        Posting as <strong>{{ currentUser.full_name }}</strong> ({{ currentUser.role }}).
+        <span *ngIf="currentUser.role !== 'student'">Your listings are automatically verified.</span>
+        <span *ngIf="currentUser.role === 'student'"
+          >Your listing will be reviewed by a helper before appearing as verified.</span
+        >
+      </small>
+    </form>
+  </section>
+
+  <ng-template #signInPrompt>
+    <div class="sign-in-prompt">
+      <p>Please sign in or register to share housing opportunities with the community.</p>
+    </div>
+  </ng-template>
+
+  <!-- Loading State -->
+  <section *ngIf="isLoading()" class="loading-state">
+    <div class="spinner"></div>
+    <p>Loading listings...</p>
+  </section>
+
+  <!-- Listings Grid -->
+  <section *ngIf="!isLoading()" class="listings-grid">
+    <article
+      *ngFor="let listing of listings()"
+      class="listing-card"
+      [class.verified]="listing.verified"
+      [routerLink]="['/listings', listing.id]"
+    >
+      <!-- Photo Carousel or Placeholder -->
+      <div class="listing-photo">
+        <img
+          *ngIf="listing.photos && listing.photos.length > 0"
+          [src]="listing.photos[0]"
+          [alt]="listing.title"
+        />
+        <div *ngIf="!listing.photos || listing.photos.length === 0" class="photo-placeholder">
+          <span>🏠</span>
+        </div>
+        <span *ngIf="listing.verified" class="verified-badge-overlay">Verified</span>
+      </div>
+
+      <div class="listing-content">
+        <div class="listing-header">
+          <h3>{{ listing.title }}</h3>
+          <span class="price">${{ listing.price | number: '1.0-0' }}<small>/mo</small></span>
+        </div>
+
+        <p class="location">{{ listing.location }}</p>
+
+        <p class="description">{{ listing.description }}</p>
+
+        <div class="listing-footer">
+          <div class="owner-info">
+            <span class="owner-name">{{ listing.owner.full_name }}</span>
+            <span class="post-date">{{ listing.created_at | date: 'mediumDate' }}</span>
+          </div>
+
+          <div class="listing-actions">
+            <a [href]="'mailto:' + listing.contact" class="contact-link">Contact</a>
+            <button
+              *ngIf="(currentUser$ | async) && canDeleteListing(listing, currentUser$ | async)"
+              type="button"
+              class="btn-delete"
+              (click)="deleteListing(listing, $event)"
+              [disabled]="isSubmitting()"
+              title="Delete listing"
+            >
+              Delete
+            </button>
+          </div>
+        </div>
+      </div>
+    </article>
+
+    <div *ngIf="listings().length === 0" class="empty-state">
+      <p>No listings available yet. Be the first to share one!</p>
+    </div>
+  </section>
+</div>
