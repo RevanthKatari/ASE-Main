@@ -4,9 +4,19 @@
       <h1>Community Events</h1>
       <p>Connect with your UniLife community through meetups, workshops, and celebrations.</p>
     </div>
-    <button type="button" class="btn-refresh" (click)="loadEvents()" [disabled]="isLoading()">
-      Refresh
-    </button>
+    <div class="header-actions">
+      <button 
+        type="button" 
+        class="btn-share" 
+        *ngIf="currentUser$ | async"
+        (click)="toggleCreateForm()"
+      >
+        <span>{{ showCreateForm() ? '✕ Cancel' : '+ Share Event' }}</span>
+      </button>
+      <button type="button" class="btn-refresh" (click)="loadEvents()" [disabled]="isLoading()">
+        Refresh
+      </button>
+    </div>
   </header>
 
   <div class="alert alert-error" *ngIf="errorMessage() as error">{{ error }}</div>
@@ -14,9 +24,15 @@
   <div class="alert alert-success" *ngIf="feedbackMessage() as message">{{ message }}</div>
 
   <!-- Create Event Form -->
-  <section id="create-event" class="create-section" *ngIf="currentUser$ | async as currentUser; else signInPrompt">
-    <h2>Host an Event</h2>
-    <form [formGroup]="form" (ngSubmit)="submit()" class="modern-form">
+  <section 
+    id="create-event" 
+    class="create-section" 
+    *ngIf="showCreateForm(); else signInPrompt"
+    [@slideInOut]
+  >
+    <ng-container *ngIf="currentUser$ | async as currentUser">
+      <h2>Host an Event</h2>
+      <form [formGroup]="form" (ngSubmit)="submit()" class="modern-form">
       <div class="form-grid">
         <label class="form-label">
           <span class="label-text">Event Title *</span>
@@ -72,11 +88,12 @@
         <span *ngIf="isSubmitting()">Publishing...</span>
       </button>
 
-      <small class="form-help">
-        Hosted by <strong>{{ currentUser.full_name }}</strong>. Please include accessibility information when
-        possible.
-      </small>
-    </form>
+        <small class="form-help">
+          Hosted by <strong>{{ currentUser.full_name }}</strong>. Please include accessibility information when
+          possible.
+        </small>
+      </form>
+    </ng-container>
   </section>
 
   <ng-template #signInPrompt>

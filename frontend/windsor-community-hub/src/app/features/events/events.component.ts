@@ -2,6 +2,7 @@ import { AsyncPipe, DatePipe, NgFor, NgIf } from '@angular/common';
 import { Component, AfterViewInit, OnInit, inject, signal } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { ActivatedRoute, RouterLink } from '@angular/router';
+import { trigger, transition, style, animate } from '@angular/animations';
 import { finalize } from 'rxjs';
 
 import { AuthService } from '../../core/services/auth.service';
@@ -14,6 +15,17 @@ import { CommunityEvent } from '../../core/models/event';
   imports: [NgIf, NgFor, AsyncPipe, DatePipe, ReactiveFormsModule, RouterLink],
   templateUrl: './events.component.html',
   styleUrl: './events.component.scss',
+  animations: [
+    trigger('slideInOut', [
+      transition(':enter', [
+        style({ opacity: 0, transform: 'translateY(-20px)' }),
+        animate('300ms cubic-bezier(0.4, 0, 0.2, 1)', style({ opacity: 1, transform: 'translateY(0)' }))
+      ]),
+      transition(':leave', [
+        animate('200ms cubic-bezier(0.4, 0, 0.2, 1)', style({ opacity: 0, transform: 'translateY(-20px)' }))
+      ])
+    ])
+  ]
 })
 export class EventsComponent implements OnInit, AfterViewInit {
   private authService = inject(AuthService);
@@ -37,8 +49,16 @@ export class EventsComponent implements OnInit, AfterViewInit {
     iframe_url: [''],
   });
 
+  showCreateForm = signal<boolean>(false);
+
   ngOnInit(): void {
     this.loadEvents();
+    // Check if we came from dashboard (fragment = 'create')
+    this.route.fragment.subscribe((fragment) => {
+      if (fragment === 'create') {
+        this.showCreateForm.set(true);
+      }
+    });
   }
 
   ngAfterViewInit(): void {
@@ -54,6 +74,18 @@ export class EventsComponent implements OnInit, AfterViewInit {
         }, 100);
       }
     });
+  }
+
+  toggleCreateForm(): void {
+    this.showCreateForm.update(value => !value);
+    if (this.showCreateForm()) {
+      setTimeout(() => {
+        const element = document.getElementById('create-event');
+        if (element) {
+          element.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
+      }, 100);
+    }
   }
 
   loadEvents(): void {
@@ -106,6 +138,7 @@ export class EventsComponent implements OnInit, AfterViewInit {
           this.form.reset();
           this.feedbackMessage.set('Event published successfully.');
           this.events.update((items) => [...items, event].sort((a, b) => a.start_time.localeCompare(b.start_time)));
+          this.showCreateForm.set(false);
         },
         error: (error) => {
           this.feedbackMessage.set(error?.error?.error ?? 'Unable to publish event.');
