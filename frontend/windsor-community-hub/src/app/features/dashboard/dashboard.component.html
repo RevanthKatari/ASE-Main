@@ -1,0 +1,84 @@
+<div class="dashboard-container">
+  <div class="dashboard-hero">
+    <div class="hero-content">
+      <h1 class="hero-title">
+        <span class="gradient-text">Welcome to UniLife</span>
+      </h1>
+      <p class="hero-subtitle">Share housing opportunities and connect through community events</p>
+    </div>
+  </div>
+
+  <div class="action-cards" *ngIf="currentUser$ | async as user">
+    <!-- Share Housing Card -->
+    <div class="action-card housing-card" (click)="navigateToShareHousing()">
+      <div class="card-glow"></div>
+      <div class="card-content">
+        <div class="card-icon-wrapper">
+          <div class="card-icon housing-icon">
+            <span class="icon-emoji">🏠</span>
+          </div>
+        </div>
+        <h2 class="card-title">Share Housing</h2>
+        <p class="card-description">Post verified accommodation listings to help fellow students find safe housing</p>
+        <div class="card-button">
+          <span>Get Started</span>
+          <span class="arrow">→</span>
+        </div>
+      </div>
+      <div class="card-particles">
+        <span class="particle"></span>
+        <span class="particle"></span>
+        <span class="particle"></span>
+        <span class="particle"></span>
+        <span class="particle"></span>
+      </div>
+    </div>
+
+    <!-- Share Event Card -->
+    <div class="action-card event-card" (click)="navigateToShareEvent()">
+      <div class="card-glow"></div>
+      <div class="card-content">
+        <div class="card-icon-wrapper">
+          <div class="card-icon event-icon">
+            <span class="icon-emoji">📅</span>
+          </div>
+        </div>
+        <h2 class="card-title">Share Event</h2>
+        <p class="card-description">Create community events, workshops, and gatherings to bring people together</p>
+        <div class="card-button">
+          <span>Get Started</span>
+          <span class="arrow">→</span>
+        </div>
+      </div>
+      <div class="card-particles">
+        <span class="particle"></span>
+        <span class="particle"></span>
+        <span class="particle"></span>
+        <span class="particle"></span>
+        <span class="particle"></span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Quick Links -->
+  <div class="quick-links" *ngIf="currentUser$ | async">
+    <a routerLink="/listings" class="quick-link">
+      <span class="link-icon">🏠</span>
+      <span>Browse Housing</span>
+    </a>
+    <a routerLink="/events" class="quick-link">
+      <span class="link-icon">📅</span>
+      <span>Browse Events</span>
+    </a>
+  </div>
+
+  <!-- Guest View -->
+  <div class="guest-prompt" *ngIf="!(currentUser$ | async)">
+    <div class="prompt-card">
+      <h2>Join UniLife</h2>
+      <p>Sign in to start sharing housing opportunities and community events</p>
+      <a routerLink="/login" class="prompt-button">Sign In</a>
+    </div>
+  </div>
+</div>
+

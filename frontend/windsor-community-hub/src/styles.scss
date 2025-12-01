@@ -66,10 +66,15 @@
   --font-weight-semibold: 600;
   --font-weight-bold: 700;
   
-  /* Transitions */
-  --transition-fast: 150ms ease-in-out;
-  --transition-base: 200ms ease-in-out;
-  --transition-slow: 300ms ease-in-out;
+  /* Transitions - Optimized for 60fps */
+  --transition-fast: 150ms cubic-bezier(0.4, 0, 0.2, 1);
+  --transition-base: 200ms cubic-bezier(0.4, 0, 0.2, 1);
+  --transition-slow: 300ms cubic-bezier(0.4, 0, 0.2, 1);
+  
+  /* Animation timing functions for smooth 60fps */
+  --ease-out-cubic: cubic-bezier(0.33, 1, 0.68, 1);
+  --ease-in-out-cubic: cubic-bezier(0.65, 0, 0.35, 1);
+  --ease-spring: cubic-bezier(0.68, -0.55, 0.265, 1.55);
 }
 
 *,
@@ -130,4 +135,40 @@ img {
   max-width: 100%;
   height: auto;
   display: block;
+}
+
+/* Performance Optimizations for 60fps */
+* {
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* GPU Acceleration for animated elements */
+button,
+a,
+.card,
+.listing-card,
+.event-card,
+.action-card {
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+  transform: translateZ(0);
+  -webkit-transform: translateZ(0);
+  will-change: transform;
+}
+
+/* Smooth scrolling */
+html {
+  scroll-behavior: smooth;
+}
+
+/* Optimize repaints */
+* {
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* Reduce layout shifts */
+img,
+video {
+  content-visibility: auto;
 }

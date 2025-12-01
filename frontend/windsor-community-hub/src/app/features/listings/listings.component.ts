@@ -1,7 +1,7 @@
 import { AsyncPipe, DatePipe, DecimalPipe, NgFor, NgIf } from '@angular/common';
-import { Component, OnInit, inject, signal } from '@angular/core';
+import { Component, AfterViewInit, OnInit, inject, signal } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
-import { RouterLink } from '@angular/router';
+import { ActivatedRoute, RouterLink } from '@angular/router';
 import { finalize } from 'rxjs';
 
 import { AuthService } from '../../core/services/auth.service';
@@ -16,10 +16,11 @@ import { environment } from '../../../environments/environment';
   templateUrl: './listings.component.html',
   styleUrl: './listings.component.scss',
 })
-export class ListingsComponent implements OnInit {
+export class ListingsComponent implements OnInit, AfterViewInit {
   private authService = inject(AuthService);
   private listingService = inject(ListingService);
   private fb = inject(FormBuilder);
+  private route = inject(ActivatedRoute);
 
   listings = signal<Listing[]>([]);
   isLoading = signal<boolean>(true);
@@ -42,6 +43,21 @@ export class ListingsComponent implements OnInit {
 
   ngOnInit(): void {
     this.loadListings();
+  }
+
+  ngAfterViewInit(): void {
+    // Scroll to create form if fragment is 'create'
+    this.route.fragment.subscribe((fragment) => {
+      if (fragment === 'create') {
+        setTimeout(() => {
+          const element = document.getElementById('create-listing');
+          if (element) {
+            element.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            element.focus();
+          }
+        }, 100);
+      }
+    });
   }
 
   loadListings(): void {

@@ -1,7 +1,7 @@
 import { AsyncPipe, DatePipe, NgFor, NgIf } from '@angular/common';
-import { Component, OnInit, inject, signal } from '@angular/core';
+import { Component, AfterViewInit, OnInit, inject, signal } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
-import { RouterLink } from '@angular/router';
+import { ActivatedRoute, RouterLink } from '@angular/router';
 import { finalize } from 'rxjs';
 
 import { AuthService } from '../../core/services/auth.service';
@@ -15,10 +15,11 @@ import { CommunityEvent } from '../../core/models/event';
   templateUrl: './events.component.html',
   styleUrl: './events.component.scss',
 })
-export class EventsComponent implements OnInit {
+export class EventsComponent implements OnInit, AfterViewInit {
   private authService = inject(AuthService);
   private eventService = inject(EventService);
   private fb = inject(FormBuilder);
+  private route = inject(ActivatedRoute);
 
   events = signal<CommunityEvent[]>([]);
   isLoading = signal<boolean>(true);
@@ -38,6 +39,21 @@ export class EventsComponent implements OnInit {
 
   ngOnInit(): void {
     this.loadEvents();
+  }
+
+  ngAfterViewInit(): void {
+    // Scroll to create form if fragment is 'create'
+    this.route.fragment.subscribe((fragment) => {
+      if (fragment === 'create') {
+        setTimeout(() => {
+          const element = document.getElementById('create-event');
+          if (element) {
+            element.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            element.focus();
+          }
+        }, 100);
+      }
+    });
   }
 
   loadEvents(): void {

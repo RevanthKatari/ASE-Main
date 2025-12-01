@@ -14,7 +14,7 @@
   <div class="alert alert-success" *ngIf="feedbackMessage() as message">{{ message }}</div>
 
   <!-- Create Event Form -->
-  <section class="create-section" *ngIf="currentUser$ | async as currentUser; else signInPrompt">
+  <section id="create-event" class="create-section" *ngIf="currentUser$ | async as currentUser; else signInPrompt">
     <h2>Host an Event</h2>
     <form [formGroup]="form" (ngSubmit)="submit()" class="modern-form">
       <div class="form-grid">

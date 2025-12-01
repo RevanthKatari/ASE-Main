@@ -343,15 +343,18 @@
   border-radius: var(--radius-lg);
   overflow: hidden;
   border: 1px solid var(--color-bg-border);
-  transition: all var(--transition-base);
+  transition: transform var(--transition-base), box-shadow var(--transition-base), border-color var(--transition-base);
   cursor: pointer;
   display: flex;
   flex-direction: column;
   box-shadow: var(--shadow-sm);
+  will-change: transform, box-shadow;
+  backface-visibility: hidden;
+  transform: translateZ(0);
 
   &:hover {
     box-shadow: var(--shadow-lg);
-    transform: translateY(-2px);
+    transform: translateY(-2px) translateZ(0);
     border-color: var(--color-primary);
   }
 
@@ -373,10 +376,12 @@
     height: 100%;
     object-fit: cover;
     transition: transform var(--transition-slow);
+    will-change: transform;
+    transform: translateZ(0);
   }
 
   &:hover img {
-    transform: scale(1.05);
+    transform: scale(1.05) translateZ(0);
   }
 
   .photo-placeholder {
